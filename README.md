@@ -12,14 +12,7 @@ MCP server for accessing DevDocs documentation from AI editors like Claude, Curs
 
 ## Quick Start
 
-### Using Docker (Recommended)
-
-```bash
-# Run the MCP server
-docker run -v devdocs-data:/app/data devdocs-reference-mcp:latest
-```
-
-### From Source
+### Using Docker Compose (Recommended)
 
 ```bash
 # Clone repository
@@ -30,10 +23,21 @@ cd devdocs-reference-mcp
 cp .env.template .env
 # Edit .env file as needed
 
-# Build Docker image
-docker build -t devdocs-reference-mcp:latest .
+# Start both DevDocs and MCP server
+docker-compose up -d
 
-# Run the MCP server
+# Check logs
+docker-compose logs -f mcp-server
+```
+
+### Using Docker (Individual Services)
+
+```bash
+# Start DevDocs container
+docker run --name devdocs -d -p 9292:9292 ghcr.io/freecodecamp/devdocs:latest
+
+# Build and run MCP server
+docker build -t devdocs-reference-mcp:latest .
 docker run -v devdocs-data:/app/data devdocs-reference-mcp:latest
 ```
 

@@ -35,7 +35,6 @@ export interface ServerConfig {
   };
   devdocs: {
     baseUrl: string;
-    thorCommand: string;
   };
   search: {
     maxResults: number;
@@ -69,13 +68,6 @@ export interface DownloadDocsInput {
   version?: string;
 }
 
-// DevDocs thor command integration
-export interface ThorCommandResult {
-  success: boolean;
-  output: string;
-  error?: string;
-}
-
 export interface DevDocsLanguageInfo {
   name: string;
   slug: string;
@@ -84,18 +76,4 @@ export interface DevDocsLanguageInfo {
   release?: string;
   mtime?: number;
   db_size?: number;
-}
-
-// Database schema types for SQLite FTS5
-export interface DocumentRecord {
-  id?: number;
-  language: string;
-  version: string;
-  title: string;
-  content: string;
-  url: string;
-  file_path: string;
-  section: string;
-  created_at: string;
-  updated_at: string;
 }

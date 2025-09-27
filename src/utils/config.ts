@@ -7,8 +7,7 @@ const DEFAULT_CONFIG: ServerConfig = {
     cachePath: '/app/data/cache'
   },
   devdocs: {
-    baseUrl: 'https://devdocs.io',
-    thorCommand: '/app/devdocs/thor'
+    baseUrl: 'https://devdocs.io'
   },
   search: {
     maxResults: 50,
@@ -28,8 +27,7 @@ export function loadConfig(): ServerConfig {
       cachePath: process.env.CACHE_PATH || DEFAULT_CONFIG.storage.cachePath
     },
     devdocs: {
-      baseUrl: process.env.DEVDOCS_BASE_URL || DEFAULT_CONFIG.devdocs.baseUrl,
-      thorCommand: process.env.DEVDOCS_THOR_COMMAND || DEFAULT_CONFIG.devdocs.thorCommand
+      baseUrl: process.env.DEVDOCS_BASE_URL || DEFAULT_CONFIG.devdocs.baseUrl
     },
     search: {
       maxResults: parseInt(process.env.MAX_RESULTS || '50', 10),

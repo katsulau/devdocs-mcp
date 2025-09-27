@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  devdocs:
+    image: ghcr.io/freecodecamp/devdocs:latest
+    container_name: devdocs
+    ports:
+      - "9292:9292"
+    volumes:
+      - devdocs-data:/usr/local/devdocs/public/docs
+    environment:
+      - DEVDOCS_HOST=0.0.0.0
+      - DEVDOCS_PORT=9292
+    networks:
+      - devdocs-network
+
+  mcp-server:
+    build: .
+    container_name: devdocs-mcp-server
+    depends_on:
+      - devdocs
+    environment:
+      - DEVDOCS_BASE_URL=http://devdocs:9292
+      - LOG_LEVEL=info
+      - LOG_FORMAT=json
+    volumes:
+      - devdocs-data:/app/data
+    networks:
+      - devdocs-network
+    stdin_open: true
+    tty: true
+
+volumes:
+  devdocs-data:
+
+networks:
+  devdocs-network:
+    driver: bridge
