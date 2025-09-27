@@ -84,12 +84,6 @@ export class DevDocsMCPServer {
             description: 'List of languages and versions available in DevDocs',
             mimeType: 'application/json',
           },
-          {
-            uri: 'devdocs://downloaded',
-            name: 'Downloaded Languages',
-            description: 'List of downloaded languages and versions',
-            mimeType: 'application/json',
-          },
         ],
       };
     });
@@ -116,22 +110,6 @@ export class DevDocsMCPServer {
             throw new Error(`Failed to get available languages: ${error}`);
           }
 
-        case 'devdocs://downloaded':
-          try {
-            const downloaded = await this.devDocsManager.getDownloadedLanguages();
-            return {
-              contents: [
-                {
-                  uri,
-                  mimeType: 'application/json',
-                  text: JSON.stringify(downloaded, null, 2),
-                },
-              ],
-            };
-          } catch (error) {
-            throw new Error(`Failed to get downloaded languages: ${error}`);
-          }
-
         default:
           throw new Error(`Unknown resource: ${uri}`);
       }
@@ -145,7 +123,7 @@ export class DevDocsMCPServer {
         tools: [
           {
             name: 'search_docs',
-            description: 'Search documentation for specified language and version',
+            description: 'Search DevDocs documentation for specified language and version using HTTP API',
             inputSchema: {
               type: 'object',
               properties: {
@@ -172,7 +150,7 @@ export class DevDocsMCPServer {
           },
           {
             name: 'download_docs',
-            description: 'Download documentation for specified language and version',
+            description: 'Get instructions for accessing DevDocs documentation via browser',
             inputSchema: {
               type: 'object',
               properties: {
@@ -216,13 +194,37 @@ export class DevDocsMCPServer {
     try {
       this.logger.info('mcp-server', `Searching docs for: ${input.query} in ${input.language}${input.version ? ` v${input.version}` : ''}`);
       
-      // TODO: Implement actual search functionality in Phase 2
-      // For now, return placeholder response
+      const searchResults = await this.devDocsManager.searchDocumentation(
+        input.query,
+        input.language,
+        input.version
+      );
+      
+      if (searchResults.length === 0) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `No results found for "${input.query}" in ${input.language}${input.version ? ` version ${input.version}` : ''}.`,
+            },
+          ],
+        };
+      }
+
+      // Format search results
+      const formattedResults = searchResults.slice(0, input.limit || this.config.search.maxResults)
+        .map((result: any, index: number) => {
+          return `${index + 1}. **${result.title || 'Untitled'}**
+   - URL: ${result.url || 'N/A'}
+   - Content: ${result.content ? result.content.substring(0, this.config.search.snippetLength) + '...' : 'No content'}
+   - Relevance: ${result.relevanceScore || 'N/A'}`;
+        }).join('\n\n');
+
       return {
         content: [
           {
             type: 'text',
-            text: `Search functionality not yet implemented. Would search for "${input.query}" in ${input.language}${input.version ? ` version ${input.version}` : ''}.`,
+            text: `Found ${searchResults.length} results for "${input.query}" in ${input.language}${input.version ? ` version ${input.version}` : ''}:\n\n${formattedResults}`,
           },
         ],
       };
@@ -242,37 +244,63 @@ export class DevDocsMCPServer {
 
   private async handleDownloadDocs(input: DownloadDocsInput) {
     try {
-      this.logger.info('mcp-server', `Downloading docs for: ${input.language}${input.version ? ` v${input.version}` : ''}`);
+      this.logger.info('mcp-server', `Checking docs availability for: ${input.language}${input.version ? ` v${input.version}` : ''}`);
       
-      const success = await this.devDocsManager.downloadDocumentation(input.language, input.version);
+      // Get available languages to check if the requested language exists
+      const availableLanguages = await this.devDocsManager.getAvailableLanguages();
+      const requestedLang = availableLanguages.find(lang => 
+        lang.name === input.language || 
+        lang.displayName.toLowerCase() === input.language.toLowerCase()
+      );
       
-      if (success) {
+      if (!requestedLang) {
         return {
           content: [
             {
               type: 'text',
-              text: `Successfully downloaded ${input.language}${input.version ? ` version ${input.version}` : ''} documentation.`,
-            },
-          ],
-        };
-      } else {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Failed to download ${input.language}${input.version ? ` version ${input.version}` : ''} documentation.`,
+              text: `❌ Language "${input.language}" not found in available documentation.
+
+Available languages: ${availableLanguages.slice(0, 10).map(lang => lang.displayName).join(', ')}${availableLanguages.length > 10 ? ` and ${availableLanguages.length - 10} more...` : ''}
+
+Please check the language name and try again.`,
             },
           ],
           isError: true,
         };
       }
-    } catch (error) {
-      this.logger.error('mcp-server', `Download failed: ${error}`);
+
+      // Provide instructions for manual download via browser
+      const devdocsUrl = `${this.config.devdocs.baseUrl.replace('devdocs:9292', 'localhost:9292')}`;
+      const languageUrl = `${devdocsUrl}/docs/${requestedLang.name}`;
+      
       return {
         content: [
           {
             type: 'text',
-            text: `Download failed: ${error}`,
+            text: `📚 **${requestedLang.displayName} Documentation Setup**
+
+Since DevDocs doesn't provide a direct download API, please follow these steps to access the documentation:
+
+1. **Open DevDocs in your browser**: ${devdocsUrl}
+2. **Navigate to ${requestedLang.displayName}**: ${languageUrl}
+3. **Browse the documentation** - it will be automatically loaded when you access it
+
+**Available versions for ${requestedLang.displayName}:**
+${requestedLang.versions.map(v => `- ${v.version}${v.isDefault ? ' (default)' : ''}`).join('\n')}
+
+Once you've accessed the documentation in your browser, you can use the \`search_docs\` tool to search within it.
+
+**Note**: The documentation is cached locally in the DevDocs container, so subsequent searches will be faster.`,
+          },
+        ],
+      };
+    } catch (error) {
+      this.logger.error('mcp-server', `Download check failed: ${error}`);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Failed to check documentation availability: ${error}`,
           },
         ],
         isError: true,

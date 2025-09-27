@@ -28,7 +28,7 @@ export class DevDocsManager {
         throw new Error(`Failed to fetch languages: ${response.statusText}`);
       }
 
-      const languagesData: any = await response.json();
+      const languagesData = await response.json() as Record<string, any>;
       const languages = this.parseLanguagesFromAPI(languagesData);
       
       this.logger.info('document-manager', `Found ${languages.length} available languages`);
@@ -40,46 +40,54 @@ export class DevDocsManager {
   }
 
   /**
-   * Get list of downloaded languages
+   * Search documentation for specified query, language and version
    */
-  async getDownloadedLanguages(): Promise<DocumentLanguage[]> {
-    try {
-      this.logger.info('document-manager', 'Checking downloaded languages');
-      
-      // For now, return empty array as we'll implement download tracking later
-      // In the future, this could check local metadata or DevDocs API for downloaded docs
-      return [];
-    } catch (error) {
-      this.logger.error('document-manager', `Error checking downloaded languages: ${error}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Download documentation for specified language and version
-   */
-  async downloadDocumentation(language: string, version?: string): Promise<boolean> {
+  async searchDocumentation(query: string, language: string, version?: string): Promise<any[]> {
     try {
       const langSlug = version ? `${language}~${version}` : language;
-      this.logger.info('document-manager', `Starting download for ${langSlug}`);
+      this.logger.info('document-manager', `Searching for "${query}" in ${langSlug}`);
 
-      // For now, return true as DevDocs container handles downloads
-      // In the future, this could trigger DevDocs API download or check status
-      this.logger.info('document-manager', `Download request for ${langSlug} - handled by DevDocs container`);
-      return true;
+      // DevDocs documentation index API endpoint
+      const docUrl = `${this.devdocsBaseUrl}/docs/${langSlug}/index.json`;
+      
+      const response = await fetch(docUrl);
+      if (!response.ok) {
+        throw new Error(`Documentation not available: ${response.statusText}`);
+      }
+
+      const docData = await response.json() as { entries: any[], types: any[] };
+      
+      // Simple text search in entries
+      const searchResults = docData.entries
+        .filter(entry => {
+          const searchText = `${entry.name || ''} ${entry.path || ''}`.toLowerCase();
+          return searchText.includes(query.toLowerCase());
+        })
+        .slice(0, 10) // Limit to 10 results
+        .map(entry => ({
+          title: entry.name || 'Untitled',
+          url: `${this.devdocsBaseUrl}/docs/${langSlug}/${entry.path}`,
+          content: entry.name || '',
+          relevanceScore: 1.0 // Simple relevance for now
+        }));
+
+      this.logger.info('document-manager', `Found ${searchResults.length} search results`);
+      
+      return searchResults;
     } catch (error) {
-      this.logger.error('document-manager', `Error downloading ${language}: ${error}`);
-      return false;
+      this.logger.error('document-manager', `Error searching documentation: ${error}`);
+      throw error;
     }
   }
 
   /**
    * Parse languages from DevDocs API response
    */
-  private parseLanguagesFromAPI(apiData: any[]): DocumentLanguage[] {
+  private parseLanguagesFromAPI(apiData: Record<string, any>): DocumentLanguage[] {
     const languages: Map<string, DocumentLanguage> = new Map();
 
-    for (const item of apiData) {
+    for (const key in apiData) {
+      const item = apiData[key];
       const name = item.slug;
       const displayName = item.name;
       const version = item.version || 'latest';
@@ -97,7 +105,7 @@ export class DevDocsManager {
         version,
         isDefault: !version || version === 'latest',
         downloadStatus: 'available',
-        path: `${this.devdocsBaseUrl}/${name}/${version}`
+        path: `${this.devdocsBaseUrl}/docs/${name}`
       });
     }
 
