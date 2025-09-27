@@ -8,9 +8,10 @@ yarn-error.log*
 dist/
 build/
 
-# Environment variables
+# Environment variables (may contain sensitive data)
 .env
 .env.local
+.env.*.local
 .env.development.local
 .env.test.local
 .env.production.local

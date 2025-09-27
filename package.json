@@ -21,12 +21,16 @@
     "claude",
     "cursor"
   ],
-  "author": "Your Name",
+  "author": "DevDocs Reference MCP Contributors",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/katsulau/devdocs-reference-mcp.git"
+  },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
-    "sqlite3": "^5.1.6",
-    "yaml": "^2.3.4"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "dotenv": "^17.2.2",
+    "sqlite3": "^5.1.6"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

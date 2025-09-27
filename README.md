@@ -16,23 +16,45 @@ MCP server for accessing DevDocs documentation from AI editors like Claude, Curs
 
 ```bash
 # Run the MCP server
-docker run -p 3000:3000 -v devdocs-data:/app/data devdocs-reference-mcp:latest
+docker run -v devdocs-data:/app/data devdocs-reference-mcp:latest
 ```
 
 ### From Source
 
 ```bash
-# Clone and install
-git clone https://github.com/your-username/devdocs-reference-mcp.git
+# Clone repository
+git clone https://github.com/katsulau/devdocs-reference-mcp.git
 cd devdocs-reference-mcp
-npm install
 
-# Build and run
-npm run build
-npm start
+# Setup environment variables
+cp .env.template .env
+# Edit .env file as needed
+
+# Build Docker image
+docker build -t devdocs-reference-mcp:latest .
+
+# Run the MCP server
+docker run -v devdocs-data:/app/data devdocs-reference-mcp:latest
 ```
 
 ## Configuration
+
+### Environment Variables
+
+Copy `.env.template` to `.env` and customize as needed:
+
+```bash
+cp .env.template .env
+```
+
+Available environment variables:
+- `DOCUMENTS_PATH`: Path to store downloaded documentation
+- `INDEX_PATH`: Path to store search indexes
+- `CACHE_PATH`: Path to store cache files
+- `LOG_LEVEL`: Logging level (debug, info, warn, error)
+- `LOG_FORMAT`: Log format (json, text)
+
+### AI Editor Configuration
 
 Configure your AI editor to use this MCP server:
 
