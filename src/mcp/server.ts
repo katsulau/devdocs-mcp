@@ -306,7 +306,7 @@ Please check the language name and try again.`,
 
       // Provide instructions for manual download via browser
       const devdocsUrl = `${this.config.devdocs.baseUrl.replace('devdocs:9292', 'localhost:9292')}`;
-      const languageUrl = `${devdocsUrl}/docs/${requestedLang.name}`;
+      const languageUrl = `${devdocsUrl}/${requestedLang.name}`;
       const escapedDevdocsUrl = this.escapeUrlForMarkdown(devdocsUrl);
       const escapedLanguageUrl = this.escapeUrlForMarkdown(languageUrl);
 
