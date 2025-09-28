@@ -23,7 +23,7 @@ export class DevDocsManager {
     try {
       this.logger.info('document-manager', 'Fetching available languages from DevDocs API');
       
-      const response = await fetch(`${this.devdocsBaseUrl}/docs.json`);
+      const response = await fetch(`${this.devdocsBaseUrl}/assets/docs.json`);
       if (!response.ok) {
         throw new Error(`Failed to fetch languages: ${response.statusText}`);
       }
