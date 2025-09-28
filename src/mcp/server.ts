@@ -149,8 +149,8 @@ export class DevDocsMCPServer {
             },
           },
           {
-            name: 'download_docs',
-            description: 'Get instructions for accessing DevDocs documentation via browser',
+            name: 'view_available_docs',
+            description: 'View available documentation languages and get instructions for accessing them via browser',
             inputSchema: {
               type: 'object',
               properties: {
@@ -180,7 +180,7 @@ export class DevDocsMCPServer {
           const searchInput = this.validateSearchDocsInput(args);
           return await this.handleSearchDocs(searchInput);
         
-        case 'download_docs':
+        case 'view_available_docs':
           const downloadInput = this.validateDownloadDocsInput(args);
           return await this.handleDownloadDocs(downloadInput);
         

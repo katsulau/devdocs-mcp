@@ -85,21 +85,21 @@ function testTools() {
     mcpServer.stdin.write(JSON.stringify(searchRequest) + '\n');
   }, 1000);
   
-  // Test download_docs tool
+  // Test view_available_docs tool
   setTimeout(() => {
     const downloadRequest = {
       jsonrpc: '2.0',
       id: 4,
       method: 'tools/call',
       params: {
-        name: 'download_docs',
+        name: 'view_available_docs',
         arguments: {
           language: 'javascript'
         }
       }
     };
     
-    console.log('Testing download_docs...');
+    console.log('Testing view_available_docs...');
     mcpServer.stdin.write(JSON.stringify(downloadRequest) + '\n');
   }, 2000);
   
@@ -114,3 +114,4 @@ function testTools() {
 mcpServer.on('close', (code) => {
   console.log(`MCP server exited with code ${code}`);
 });
+
