@@ -17,6 +17,30 @@ export class DevDocsMCPServer {
   private logger: Logger;
   private config: ServerConfig;
 
+  /**
+   * Escape URL for markdown links to ensure proper rendering
+   */
+  private escapeUrlForMarkdown(url: string): string {
+    if (!url || url === '#') return '#';
+    
+    // Replace spaces with %20
+    let escapedUrl = url.replace(/ /g, '%20');
+    
+    // Ensure parentheses are properly encoded
+    escapedUrl = escapedUrl.replace(/\(/g, '%28').replace(/\)/g, '%29');
+    
+    // Ensure other special characters are encoded
+    escapedUrl = escapedUrl.replace(/\[/g, '%5B').replace(/\]/g, '%5D');
+    escapedUrl = escapedUrl.replace(/\{/g, '%7B').replace(/\}/g, '%7D');
+    escapedUrl = escapedUrl.replace(/\+/g, '%2B');
+    escapedUrl = escapedUrl.replace(/\|/g, '%7C');
+    escapedUrl = escapedUrl.replace(/\\/g, '%5C');
+    escapedUrl = escapedUrl.replace(/\^/g, '%5E');
+    escapedUrl = escapedUrl.replace(/`/g, '%60');
+    
+    return escapedUrl;
+  }
+
   constructor(config: ServerConfig, logger: Logger) {
     this.config = config;
     this.logger = logger;
@@ -211,20 +235,31 @@ export class DevDocsMCPServer {
         };
       }
 
-      // Format search results
+      // Format search results in image-like format
       const formattedResults = searchResults.slice(0, input.limit || this.config.search.maxResults)
         .map((result: any, index: number) => {
-          return `${index + 1}. **${result.title || 'Untitled'}**
-   - URL: ${result.url || 'N/A'}
-   - Content: ${result.content ? result.content.substring(0, this.config.search.snippetLength) + '...' : 'No content'}
-   - Relevance: ${result.relevanceScore || 'N/A'}`;
+          const escapedUrl = this.escapeUrlForMarkdown(result.url || '#');
+          return `## Method ${index + 1}: Using ${result.title || 'Untitled'}
+                  
+                  ### 🔗 Source Documentation
+                  [${result.title || 'Documentation'}](${escapedUrl}) - ${input.language} ${input.version || 'latest'}
+                  
+                  ### 📝 Implementation Example
+                  \`\`\`${input.language.toLowerCase()}
+                  ${result.content ? result.content.substring(0, this.config.search.snippetLength) + '...' : 'No content'}
+                  \`\`\``;
         }).join('\n\n');
 
       return {
         content: [
           {
             type: 'text',
-            text: `Found ${searchResults.length} results for "${input.query}" in ${input.language}${input.version ? ` version ${input.version}` : ''}:\n\n${formattedResults}`,
+            text: `# How to implement "${input.query}" in ${input.language}
+                    
+                    ${formattedResults}
+                    
+                    ---
+                    📚 **Browse full documentation**: [${input.language} Documentation](http://localhost:9292/${input.language})`,
           },
         ],
       };
@@ -248,7 +283,7 @@ export class DevDocsMCPServer {
       
       // Get available languages to check if the requested language exists
       const availableLanguages = await this.devDocsManager.getAvailableLanguages();
-      const requestedLang = availableLanguages.find(lang => 
+      const requestedLang = availableLanguages.find(lang =>
         lang.name === input.language || 
         lang.displayName.toLowerCase() === input.language.toLowerCase()
       );
@@ -272,7 +307,9 @@ Please check the language name and try again.`,
       // Provide instructions for manual download via browser
       const devdocsUrl = `${this.config.devdocs.baseUrl.replace('devdocs:9292', 'localhost:9292')}`;
       const languageUrl = `${devdocsUrl}/docs/${requestedLang.name}`;
-      
+      const escapedDevdocsUrl = this.escapeUrlForMarkdown(devdocsUrl);
+      const escapedLanguageUrl = this.escapeUrlForMarkdown(languageUrl);
+
       return {
         content: [
           {
@@ -281,8 +318,8 @@ Please check the language name and try again.`,
 
 Since DevDocs doesn't provide a direct download API, please follow these steps to access the documentation:
 
-1. **Open DevDocs in your browser**: ${devdocsUrl}
-2. **Navigate to ${requestedLang.displayName}**: ${languageUrl}
+1. **Open DevDocs in your browser**: [${devdocsUrl}](${escapedDevdocsUrl})
+2. **Navigate to ${requestedLang.displayName}**: [${languageUrl}](${escapedLanguageUrl})
 3. **Browse the documentation** - it will be automatically loaded when you access it
 
 **Available versions for ${requestedLang.displayName}:**
