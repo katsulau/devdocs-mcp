@@ -239,10 +239,12 @@ export class DevDocsMCPServer {
       const formattedResults = searchResults.slice(0, input.limit || this.config.search.maxResults)
         .map((result: any, index: number) => {
           const escapedUrl = this.escapeUrlForMarkdown(result.url || '#');
+          // Remove /docs/ from URL for cleaner display
+          const cleanUrl = escapedUrl.replace('/docs/', '/');
           return `## Method ${index + 1}: Using ${result.title || 'Untitled'}
                   
                   ### 🔗 Source Documentation
-                  [${result.title || 'Documentation'}](${escapedUrl}) - ${input.language} ${input.version || 'latest'}
+                  [${result.title || 'Documentation'}](${cleanUrl}) - ${input.language} ${input.version || 'latest'}
                   
                   ### 📝 Implementation Example
                   \`\`\`${input.language.toLowerCase()}
@@ -309,6 +311,8 @@ Please check the language name and try again.`,
       const languageUrl = `${devdocsUrl}/${requestedLang.name}`;
       const escapedDevdocsUrl = this.escapeUrlForMarkdown(devdocsUrl);
       const escapedLanguageUrl = this.escapeUrlForMarkdown(languageUrl);
+      // Remove /docs/ from URL for cleaner display
+      const cleanLanguageUrl = escapedLanguageUrl.replace('/docs/', '/');
 
       return {
         content: [
@@ -319,7 +323,7 @@ Please check the language name and try again.`,
 Since DevDocs doesn't provide a direct download API, please follow these steps to access the documentation:
 
 1. **Open DevDocs in your browser**: [${devdocsUrl}](${escapedDevdocsUrl})
-2. **Navigate to ${requestedLang.displayName}**: [${languageUrl}](${escapedLanguageUrl})
+2. **Navigate to ${requestedLang.displayName}**: [${languageUrl}](${cleanLanguageUrl})
 3. **Browse the documentation** - it will be automatically loaded when you access it
 
 **Available versions for ${requestedLang.displayName}:**
