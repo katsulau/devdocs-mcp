@@ -8,7 +8,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { DevDocsManager } from '../document/devdocs-manager.js';
-import { SearchDocsInput, DownloadDocsInput, ServerConfig } from '../types/index.js';
+import { SearchDocsInput, DownloadDocsInput, ServerConfig, SearchSpecificDocsInput } from '../types/index.js';
 import { Logger } from '../utils/logger.js';
 
 export class DevDocsMCPServer {
@@ -174,6 +174,29 @@ export class DevDocsMCPServer {
             },
           },
           {
+            name: 'search_specific_docs',
+            description: 'Search DevDocs by explicit slug (e.g., openjdk~21) and query',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                slug: {
+                  type: 'string',
+                  description: 'Exact DevDocs slug, e.g., openjdk~21',
+                },
+                query: {
+                  type: 'string',
+                  description: 'Text to search within the documentation index',
+                },
+                limit: {
+                  type: 'number',
+                  description: 'Maximum number of results',
+                  default: 10
+                }
+              },
+              required: ['slug', 'query']
+            }
+          },
+          {
             name: 'view_available_docs',
             description: 'View available documentation languages and get instructions for accessing them via browser',
             inputSchema: {
@@ -237,6 +260,10 @@ export class DevDocsMCPServer {
             ]
           };
         
+        case 'search_specific_docs':
+          const specificInput = this.validateSearchSpecificDocsInput(args);
+          return await this.handleSearchSpecificDocs(specificInput);
+        
         default:
           throw new Error(`Unknown tool: ${name}`);
       }
@@ -257,14 +284,14 @@ export class DevDocsMCPServer {
         return {
           content: [
             {
-              type: 'json',
-              json: {
+              type: 'text',
+              text: JSON.stringify({
                 type: 'devdocs_result',
                 query: input.query,
                 language: input.language,
                 version: input.version || 'latest',
                 results: [],
-              },
+              })
             },
           ],
         };
@@ -288,14 +315,14 @@ export class DevDocsMCPServer {
       return {
         content: [
           {
-            type: 'json',
-            json: {
+            type: 'text',
+            text: JSON.stringify({
               type: 'devdocs_result',
               query: input.query,
               language: input.language,
               version: input.version || 'latest',
               results,
-            },
+            })
           },
         ],
       };
@@ -306,6 +333,71 @@ export class DevDocsMCPServer {
           {
             type: 'text',
             text: `Search failed: ${error}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+
+  private validateSearchSpecificDocsInput(args: unknown): SearchSpecificDocsInput {
+    const input = args as Record<string, unknown>;
+    if (!input || typeof input !== 'object') {
+      throw new Error('Invalid arguments: expected object');
+    }
+    if (typeof input.slug !== 'string') {
+      throw new Error('Invalid arguments: slug must be a string');
+    }
+    if (typeof input.query !== 'string') {
+      throw new Error('Invalid arguments: query must be a string');
+    }
+    return {
+      slug: input.slug,
+      query: input.query,
+      limit: typeof input.limit === 'number' ? input.limit : undefined
+    };
+  }
+
+  private async handleSearchSpecificDocs(input: SearchSpecificDocsInput) {
+    try {
+      this.logger.info('mcp-server', `Searching by slug: ${input.slug} for query: ${input.query}`);
+      const searchResults = await this.devDocsManager.searchDocumentationBySlug(input);
+
+      const limited = searchResults.slice(0, input.limit || this.config.search.maxResults);
+      const results = limited.map((result: any) => {
+        const escapedUrl = this.escapeUrlForMarkdown(result.url || '#');
+        const cleanUrl = escapedUrl.replace('/docs/', '/');
+        const snippet = result.content
+          ? (result.content as string).substring(0, this.config.search.snippetLength) + '...'
+          : 'No content';
+        return {
+          title: result.title || 'Untitled',
+          displayUrl: cleanUrl.replace('devdocs:9292', 'localhost:9292'),
+          snippet,
+          language: input.slug.toLowerCase(),
+        };
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              type: 'devdocs_result',
+              query: input.query,
+              slug: input.slug,
+              results,
+            })
+          },
+        ],
+      };
+    } catch (error) {
+      this.logger.error('mcp-server', `Search by slug failed: ${error}`);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Search by slug failed: ${error}`,
           },
         ],
         isError: true,

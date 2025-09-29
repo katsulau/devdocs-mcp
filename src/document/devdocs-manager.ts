@@ -1,7 +1,8 @@
 import { 
   DocumentLanguage, 
   DocumentVersion, 
-  ServerConfig 
+  ServerConfig,
+  SearchSpecificDocsInput
 } from '../types/index.js';
 import { Logger } from '../utils/logger.js';
 
@@ -95,8 +96,11 @@ export class DevDocsManager {
       chosenVersion = def ? def.version : versions[0]?.version;
     }
 
-    const langSlug = chosenVersion ? `${selected.name}~${chosenVersion}` : selected.name;
-    return { language: selected, version: chosenVersion, langSlug };
+    this.logger.info('document-manager', `resolveLanguage: selected name=${selected.name} display=${selected.displayName} slug=${selected.slug}`);
+    this.logger.info('document-manager', `resolveLanguage: chosenVersion="${chosenVersion || ''}" versions=[${versionStrings.join(',')}]`);
+    this.logger.info('document-manager', `resolveLanguage: langSlug=${selected.slug}`);
+
+    return { language: selected, version: chosenVersion, langSlug: selected.slug };
   }
 
   /**
@@ -161,6 +165,46 @@ export class DevDocsManager {
       return searchResults;
     } catch (error) {
       this.logger.error('document-manager', `Error searching documentation: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Search documentation by explicit slug (no language resolution heuristic)
+   */
+  async searchDocumentationBySlug(input: SearchSpecificDocsInput): Promise<any[]> {
+    const { slug, query, limit } = input;
+    try {
+      const langSlug = slug.trim();
+      if (!langSlug) {
+        throw new Error('slug is required');
+      }
+      this.logger.info('document-manager', `Searching by slug "${langSlug}" for query "${query}"`);
+
+      const docUrl = `${this.devdocsBaseUrl}/docs/${langSlug}/index.json`;
+      const response = await fetch(docUrl);
+      if (!response.ok) {
+        throw new Error(`Documentation not available for slug ${langSlug}: ${response.statusText}`);
+      }
+
+      const docData = await response.json() as { entries: any[], types: any[] };
+      const results = docData.entries
+        .filter(entry => {
+          const searchText = `${entry.name || ''} ${entry.path || ''}`.toLowerCase();
+          return searchText.includes(query.toLowerCase());
+        })
+        .slice(0, typeof limit === 'number' ? limit : 10)
+        .map(entry => ({
+          title: entry.name || 'Untitled',
+          url: `${this.devdocsBaseUrl}/docs/${langSlug}/${entry.path}`,
+          content: entry.name || '',
+          relevanceScore: 1.0
+        }));
+
+      this.logger.info('document-manager', `Found ${results.length} search results by slug`);
+      return results;
+    } catch (error) {
+      this.logger.error('document-manager', `Error searching by slug: ${error}`);
       throw error;
     }
   }

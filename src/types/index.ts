@@ -76,6 +76,13 @@ export interface DownloadDocsInput {
   version?: string;
 }
 
+// search by slug input
+export interface SearchSpecificDocsInput {
+  slug: string; // e.g., "openjdk~21", "python~3.11"
+  query: string; // text to search within the slug's index
+  limit?: number;
+}
+
 export interface DevDocsLanguageInfo {
   name: string;
   slug: string;
