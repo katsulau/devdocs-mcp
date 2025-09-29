@@ -288,6 +288,9 @@ export class DevDocsMCPServer {
       const requestedLang = availableLanguages.find(lang =>
         lang.name === input.language || 
         lang.displayName.toLowerCase() === input.language.toLowerCase()
+          || lang.slug === input.language.toLowerCase()
+          || lang.type === input.language.toLowerCase()
+          || lang.alias === input.language.toLowerCase()
       );
       
       if (!requestedLang) {

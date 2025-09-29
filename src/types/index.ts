@@ -3,6 +3,9 @@ export interface DocumentLanguage {
   name: string;           // "python", "javascript"
   displayName: string;    // "Python", "JavaScript"  
   versions: DocumentVersion[];
+  slug?: string;          // Optional slug for API use
+  type?: string;          // e.g., "programming", "markup"
+  alias?: string;
 }
 
 export interface DocumentVersion {
