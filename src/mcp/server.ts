@@ -16,6 +16,7 @@ export class DevDocsMCPServer {
   private devDocsManager: DevDocsManager;
   private logger: Logger;
   private config: ServerConfig;
+  private httpServer?: import('http').Server;
 
   /**
    * Escape URL for markdown links to ensure proper rendering
@@ -190,6 +191,19 @@ export class DevDocsMCPServer {
               required: ['language'],
             },
           },
+          {
+            name: 'get_logs',
+            description: 'Return recent MCP server logs from in-memory buffer',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                limit: {
+                  type: 'number',
+                  description: 'Max number of recent log entries to return (most recent last)'
+                }
+              }
+            }
+          },
         ],
       };
     });
@@ -207,6 +221,21 @@ export class DevDocsMCPServer {
         case 'view_available_docs':
           const downloadInput = this.validateDownloadDocsInput(args);
           return await this.handleDownloadDocs(downloadInput);
+        
+        case 'get_logs':
+          const limit = (args as any)?.limit as number | undefined;
+          const logs = this.logger.getRecentLogs(limit);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: logs.map(l => {
+                  const base = `[${l.timestamp}] ${l.level.toUpperCase()} [${l.component}] ${l.message}`;
+                  return l.metadata ? `${base} ${JSON.stringify(l.metadata)}` : base;
+                }).join('\n') || '(no logs)'
+              }
+            ]
+          };
         
         default:
           throw new Error(`Unknown tool: ${name}`);
@@ -378,10 +407,42 @@ Once you've accessed the documentation in your browser, you can use the \`search
     
     await this.server.connect(transport);
     this.logger.info('mcp-server', 'DevDocs MCP server started successfully');
+
+    // Optional HTTP log server
+    if (this.config.logHttp.enabled) {
+      const http = await import('http');
+      const host = this.config.logHttp.host;
+      const port = this.config.logHttp.port;
+      this.httpServer = http.createServer((req, res) => {
+        if (!req.url) {
+          res.statusCode = 400;
+          res.end('Bad Request');
+          return;
+        }
+        if (req.method === 'GET' && req.url.startsWith('/logs')) {
+          const url = new URL(req.url, `http://${host}:${port}`);
+          const limitParam = url.searchParams.get('limit');
+          const limit = limitParam ? parseInt(limitParam, 10) : undefined;
+          const logs = this.logger.getRecentLogs(limit);
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ type: 'mcp_logs', count: logs.length, logs }));
+          return;
+        }
+        res.statusCode = 404;
+        res.end('Not Found');
+      });
+      this.httpServer.listen(port, host, () => {
+        this.logger.info('mcp-server', `Log HTTP server listening on http://${host}:${port}/logs`);
+      });
+    }
   }
 
   async stop(): Promise<void> {
     this.logger.info('mcp-server', 'Stopping DevDocs MCP server');
     await this.server.close();
+    if (this.httpServer) {
+      await new Promise<void>(resolve => this.httpServer!.close(() => resolve()));
+      this.httpServer = undefined;
+    }
   }
 }

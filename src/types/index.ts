@@ -45,7 +45,12 @@ export interface ServerConfig {
   };
   logging: {
     level: 'debug' | 'info' | 'warn' | 'error';
-    format: 'json' | 'text';
+    format: 'json' | 'text' | 'plain';
+  };
+  logHttp: {
+    enabled: boolean;
+    host: string;
+    port: number;
   };
 }
 
