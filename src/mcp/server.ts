@@ -283,17 +283,15 @@ export class DevDocsMCPServer {
     try {
       this.logger.info('mcp-server', `Checking docs availability for: ${input.language}${input.version ? ` v${input.version}` : ''}`);
       
-      // Get available languages to check if the requested language exists
-      const availableLanguages = await this.devDocsManager.getAvailableLanguages();
-      const requestedLang = availableLanguages.find(lang =>
-        lang.name === input.language || 
-        lang.displayName.toLowerCase() === input.language.toLowerCase()
-          || lang.slug === input.language.toLowerCase()
-          || lang.type === input.language.toLowerCase()
-          || lang.alias === input.language.toLowerCase()
-      );
-      
-      if (!requestedLang) {
+      // Resolve language using manager's resolver (supports alias/slug/type)
+      let requestedLang;
+      let resolved;
+      try {
+        resolved = await this.devDocsManager.resolveLanguage(input.language, input.version);
+        requestedLang = resolved.language;
+      } catch (e) {
+        // Fallback to previous listing for better error message
+        const availableLanguages = await this.devDocsManager.getAvailableLanguages();
         return {
           content: [
             {
@@ -301,6 +299,23 @@ export class DevDocsMCPServer {
               text: `❌ Language "${input.language}" not found in available documentation.
 
 Available languages: ${availableLanguages.slice(0, 10).map(lang => lang.displayName).join(', ')}${availableLanguages.length > 10 ? ` and ${availableLanguages.length - 10} more...` : ''}
+
+Please check the language name and try again.`,
+            },
+          ],
+          isError: true,
+        };
+      }
+      
+      if (!requestedLang) {
+        const availableLanguages = await this.devDocsManager.getAvailableLanguages();
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `❌ Language "${input.language}" not found in available documentation.
+
+Available languages: ${availableLanguages.slice(0, 10).map((lang: any) => lang.displayName).join(', ')}${availableLanguages.length > 10 ? ` and ${availableLanguages.length - 10} more...` : ''}
 
 Please check the language name and try again.`,
             },

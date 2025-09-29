@@ -17,6 +17,89 @@ export class DevDocsManager {
   }
 
   /**
+   * Resolve a language input (which may be an alias/display name/etc.) to the best matching
+   * DocumentLanguage and version. If version is not provided, try to infer from input and
+   * otherwise fall back to the default version.
+   */
+  async resolveLanguage(languageInput: string, versionInput?: string): Promise<{ language: DocumentLanguage; version?: string; langSlug: string; }> {
+    const input = (languageInput || '').trim();
+    const inputLower = input.toLowerCase();
+
+    // Try to extract a version from the language input if not explicitly provided (e.g., "Java 17")
+    let inferredVersion = versionInput && versionInput.trim() ? versionInput.trim() : undefined;
+    if (!inferredVersion) {
+      const versionMatch = inputLower.match(/\b(\d+(?:\.\d+)*)\b/);
+      if (versionMatch) {
+        inferredVersion = versionMatch[1];
+      }
+    }
+
+    const availableLanguages = await this.getAvailableLanguages();
+    if (!availableLanguages || availableLanguages.length === 0) {
+      throw new Error('No available languages found from DevDocs');
+    }
+
+    function scoreLanguage(lang: DocumentLanguage): number {
+      // Fields to compare against
+      const name = lang.name || '';
+      const displayName = lang.displayName || '';
+      const slug = lang.slug || '';
+      const type = lang.type || '';
+      const alias = lang.alias || '';
+
+      const candidates = [
+        { value: name, weight: 100 },
+        { value: displayName, weight: 95 },
+        { value: slug, weight: 90 },
+        { value: alias, weight: 85 },
+        { value: type, weight: 20 }, // type is very generic; low weight
+      ];
+
+      let maxScore = 0;
+      for (const { value, weight } of candidates) {
+        const v = (value || '').toLowerCase();
+        if (!v) continue;
+        if (v === inputLower) {
+          maxScore = Math.max(maxScore, weight + 10); // exact match bonus
+        } else if (v.includes(inputLower) || inputLower.includes(v)) {
+          maxScore = Math.max(maxScore, weight);
+        }
+      }
+      return maxScore;
+    }
+
+    let best: { lang: DocumentLanguage; score: number } | null = null;
+    for (const lang of availableLanguages) {
+      const score = scoreLanguage(lang);
+      if (!best || score > best.score) {
+        best = { lang, score };
+      }
+    }
+
+    if (!best || best.score === 0) {
+      throw new Error(`Language "${languageInput}" not found`);
+    }
+
+    const selected = best.lang;
+
+    // Choose version: explicit > inferred > default > first available
+    let chosenVersion: string | undefined = undefined;
+    const versions = selected.versions || [];
+    const versionStrings = versions.map(v => v.version);
+    if (versionInput && versionStrings.includes(versionInput)) {
+      chosenVersion = versionInput;
+    } else if (inferredVersion && versionStrings.includes(inferredVersion)) {
+      chosenVersion = inferredVersion;
+    } else {
+      const def = versions.find(v => v.isDefault);
+      chosenVersion = def ? def.version : versions[0]?.version;
+    }
+
+    const langSlug = chosenVersion ? `${selected.name}~${chosenVersion}` : selected.name;
+    return { language: selected, version: chosenVersion, langSlug };
+  }
+
+  /**
    * Get list of available languages from DevDocs API
    */
   async getAvailableLanguages(): Promise<DocumentLanguage[]> {
@@ -44,7 +127,9 @@ export class DevDocsManager {
    */
   async searchDocumentation(query: string, language: string, version?: string): Promise<any[]> {
     try {
-      const langSlug = version ? `${language}~${version}` : language;
+      // Resolve language input across name/displayName/slug/alias/type
+      const resolved = await this.resolveLanguage(language, version);
+      const langSlug = resolved.langSlug;
       this.logger.info('document-manager', `Searching for "${query}" in ${langSlug}`);
 
       // DevDocs documentation index API endpoint
@@ -91,12 +176,18 @@ export class DevDocsManager {
       const name = item.slug;
       const displayName = item.name;
       const version = item.version || 'latest';
+      const slug = item.slug;
+      const type = item.type;
+        const alias = item.alias || '';
 
       if (!languages.has(name)) {
         languages.set(name, {
           name,
           displayName,
-          versions: []
+          versions: [],
+          slug,
+          type,
+          alias
         });
       }
 
