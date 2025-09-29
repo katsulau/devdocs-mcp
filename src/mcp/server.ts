@@ -228,40 +228,45 @@ export class DevDocsMCPServer {
         return {
           content: [
             {
-              type: 'text',
-              text: `No results found for "${input.query}" in ${input.language}${input.version ? ` version ${input.version}` : ''}.`,
+              type: 'json',
+              json: {
+                type: 'devdocs_result',
+                query: input.query,
+                language: input.language,
+                version: input.version || 'latest',
+                results: [],
+              },
             },
           ],
         };
       }
 
-      // Format search results in image-like format
-      const formattedResults = searchResults.slice(0, input.limit || this.config.search.maxResults)
-        .map((result: any, index: number) => {
-          const escapedUrl = this.escapeUrlForMarkdown(result.url || '#');
-          // Remove /docs/ from URL for cleaner display
-          const cleanUrl = escapedUrl.replace('/docs/', '/');
-          return `## Method ${index + 1}: Using ${result.title || 'Untitled'}
-                  
-                  ### 🔗 Source Documentation
-                  [${result.title || 'Documentation'}](${cleanUrl}) - ${input.language} ${input.version || 'latest'}
-                  
-                  ### 📝 Implementation Example
-                  \`\`\`${input.language.toLowerCase()}
-                  ${result.content ? result.content.substring(0, this.config.search.snippetLength) + '...' : 'No content'}
-                  \`\`\``;
-        }).join('\n\n');
+      const limited = searchResults.slice(0, input.limit || this.config.search.maxResults);
+      const results = limited.map((result: any) => {
+        const escapedUrl = this.escapeUrlForMarkdown(result.url || '#');
+        const cleanUrl = escapedUrl.replace('/docs/', '/');
+        const snippet = result.content
+          ? (result.content as string).substring(0, this.config.search.snippetLength) + '...'
+          : 'No content';
+        return {
+          title: result.title || 'Untitled',
+          displayUrl: cleanUrl.replace('devdocs:9292', 'localhost:9292'),
+          snippet,
+          language: input.language.toLowerCase(),
+        };
+      });
 
       return {
         content: [
           {
-            type: 'text',
-            text: `# How to implement "${input.query}" in ${input.language}
-                    
-                    ${formattedResults}
-                    
-                    ---
-                    📚 **Browse full documentation**: [${input.language} Documentation](http://localhost:9292/${input.language})`,
+            type: 'json',
+            json: {
+              type: 'devdocs_result',
+              query: input.query,
+              language: input.language,
+              version: input.version || 'latest',
+              results,
+            },
           },
         ],
       };
