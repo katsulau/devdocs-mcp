@@ -17,11 +17,7 @@ const DEFAULT_CONFIG: ServerConfig = {
     level: 'info',
     format: 'json'
   },
-  logHttp: {
-    enabled: false,
-    host: '127.0.0.1',
-    port: 9293
-  }
+  
 };
 
 export function loadConfig(): ServerConfig {
@@ -41,11 +37,6 @@ export function loadConfig(): ServerConfig {
     logging: {
       level: (process.env.LOG_LEVEL as any) || DEFAULT_CONFIG.logging.level,
       format: (process.env.LOG_FORMAT as any) || DEFAULT_CONFIG.logging.format
-    },
-    logHttp: {
-      enabled: (process.env.LOG_HTTP_ENABLED || 'false').toLowerCase() === 'true',
-      host: process.env.LOG_HTTP_HOST || DEFAULT_CONFIG.logHttp!.host,
-      port: parseInt(process.env.LOG_HTTP_PORT || String(DEFAULT_CONFIG.logHttp!.port), 10)
     }
   };
 }

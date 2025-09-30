@@ -13,6 +13,6 @@ docker rm -f devdocs-mcp-stdin >/dev/null 2>&1 || true
 # 停止済みのmcp-serverコンテナを掃除（失敗しても続行）
 docker compose rm -sf mcp-server >/dev/null 2>&1 || true
 
-# 同一プロセスで/logsを公開し、TTY無効
-exec docker compose run --rm -T --service-ports \
+# ログHTTPサーバ公開は不要のため、サービスポート公開をやめる
+exec docker compose run --rm -T \
   --name devdocs-mcp-stdin mcp-server
