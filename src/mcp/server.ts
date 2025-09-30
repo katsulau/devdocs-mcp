@@ -7,12 +7,12 @@ import {
   ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import { DevDocsManager } from '../document/devdocs-manager.js';
-import { ServerConfig } from '../types';
+import { DevDocsManager } from '../service/document/devdocs-manager.js';
 import { DownloadDocsInput, SearchSpecificDocsInput } from './types';
 import { validateDownloadDocsInput, validateSearchSpecificDocsInput } from './validators.js';
-import { escapeUrlForMarkdown, toDisplayUrl } from './converters.js';
+import { toSearchResponse, toAvailabilityGuide, toErrorResponse, toLanguageNotFoundError } from './converters.js';
 import { Logger } from '../utils/logger.js';
+import {ServerConfig} from "../utils/config";
 
 export class DevDocsMCPServer {
   private server: Server;
@@ -20,8 +20,6 @@ export class DevDocsMCPServer {
   private logger: Logger;
   private config: ServerConfig;
   private httpServer?: import('http').Server;
-
-  // URL escaping is handled in converters.ts
 
   constructor(config: ServerConfig, logger: Logger) {
     this.config = config;
@@ -43,8 +41,6 @@ export class DevDocsMCPServer {
 
     this.setupHandlers();
   }
-
-  // Validation moved to validators.ts
 
   private setupHandlers(): void {
     // List available resources
@@ -161,51 +157,20 @@ export class DevDocsMCPServer {
     });
   }
 
-
   private async handleSearchSpecificDocs(input: SearchSpecificDocsInput) {
     try {
       this.logger.info('mcp-server', `Searching by slug: ${input.slug} for query: ${input.query}`);
       const searchResults = await this.devDocsManager.searchDocumentationBySlug(input);
-
-      const limited = searchResults.slice(0, input.limit || this.config.search.maxResults);
-      const results = limited.map((result: any) => {
-        const escapedUrl = escapeUrlForMarkdown(result.url || '#');
-        const cleanUrl = toDisplayUrl(escapedUrl);
-        const snippet = result.content
-          ? (result.content as string).substring(0, this.config.search.snippetLength) + '...'
-          : 'No content';
-        return {
-          title: result.title || 'Untitled',
-          displayUrl: cleanUrl,
-          snippet,
-          language: input.slug.toLowerCase(),
-        };
+      
+      return toSearchResponse(searchResults, {
+        query: input.query,
+        slug: input.slug,
+        maxResults: input.limit || this.config.search.maxResults,
+        snippetLength: this.config.search.snippetLength,
       });
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({
-              type: 'devdocs_result',
-              query: input.query,
-              slug: input.slug,
-              results,
-            })
-          },
-        ],
-      };
     } catch (error) {
       this.logger.error('mcp-server', `Search by slug failed: ${error}`);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `Search by slug failed: ${error}`,
-          },
-        ],
-        isError: true,
-      };
+      return toErrorResponse(`Search by slug failed: ${error}`);
     }
   }
 
@@ -213,87 +178,11 @@ export class DevDocsMCPServer {
     try {
       this.logger.info('mcp-server', `Checking docs availability for: ${input.language}${input.version ? ` v${input.version}` : ''}`);
       
-      // Resolve language using manager's resolver (supports alias/slug/type)
-      let requestedLang;
-      let resolved;
-      try {
-        resolved = await this.devDocsManager.resolveLanguage(input.language, input.version);
-        requestedLang = resolved.language;
-      } catch (e) {
-        // Fallback to previous listing for better error message
-        const availableLanguages = await this.devDocsManager.getAvailableLanguages();
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `❌ Language "${input.language}" not found in available documentation.
-
-Available languages: ${availableLanguages.slice(0, 10).map(lang => lang.displayName).join(', ')}${availableLanguages.length > 10 ? ` and ${availableLanguages.length - 10} more...` : ''}
-
-Please check the language name and try again.`,
-            },
-          ],
-          isError: true,
-        };
-      }
-      
-      if (!requestedLang) {
-        const availableLanguages = await this.devDocsManager.getAvailableLanguages();
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `❌ Language "${input.language}" not found in available documentation.
-
-Available languages: ${availableLanguages.slice(0, 10).map((lang: any) => lang.displayName).join(', ')}${availableLanguages.length > 10 ? ` and ${availableLanguages.length - 10} more...` : ''}
-
-Please check the language name and try again.`,
-            },
-          ],
-          isError: true,
-        };
-      }
-
-      // Provide instructions for manual download via browser
-      const devdocsUrl = `${this.config.devdocs.baseUrl.replace('devdocs:9292', 'localhost:9292')}`;
-      const languageUrl = `${devdocsUrl}/${requestedLang.name}`;
-      const escapedDevdocsUrl = escapeUrlForMarkdown(devdocsUrl);
-      const escapedLanguageUrl = escapeUrlForMarkdown(languageUrl);
-      // Remove /docs/ from URL for cleaner display
-      const cleanLanguageUrl = escapedLanguageUrl.replace('/docs/', '/');
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `📚 **${requestedLang.displayName} Documentation Setup**
-
-Since DevDocs doesn't provide a direct download API, please follow these steps to access the documentation:
-
-1. **Open DevDocs in your browser**: [${devdocsUrl}](${escapedDevdocsUrl})
-2. **Navigate to ${requestedLang.displayName}**: [${languageUrl}](${cleanLanguageUrl})
-3. **Browse the documentation** - it will be automatically loaded when you access it
-
-**Available versions for ${requestedLang.displayName}:**
-${requestedLang.versions.map(v => `- ${v.version}${v.isDefault ? ' (default)' : ''}`).join('\n')}
-
-Once you've accessed the documentation in your browser, you can use the \`search_docs\` tool to search within it.
-
-**Note**: The documentation is cached locally in the DevDocs container, so subsequent searches will be faster.`,
-          },
-        ],
-      };
-    } catch (error) {
-      this.logger.error('mcp-server', `Download check failed: ${error}`);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `Failed to check documentation availability: ${error}`,
-          },
-        ],
-        isError: true,
-      };
+      const resolved = await this.devDocsManager.resolveLanguage(input.language, input.version);
+      return toAvailabilityGuide(resolved.language, this.config.devdocs.baseUrl);
+    } catch (e) {
+      const availableLanguages = await this.devDocsManager.getAvailableLanguages();
+      return toLanguageNotFoundError(input.language, availableLanguages);
     }
   }
 

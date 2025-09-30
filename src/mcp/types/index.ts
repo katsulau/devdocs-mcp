@@ -16,19 +16,12 @@ export interface DownloadDocsInput {
 export interface McpContent {
   type: 'text';
   text: string;
+  _meta?: { [x: string]: unknown };
 }
 
 export interface McpToolResponse {
   content: McpContent[];
-  isError?: boolean;
-}
-
-// MCP-specific domain models (converted from external APIs)
-export interface SearchHit {
-  title: string;
-  url: string;
-  content?: string;
-  language: string;
+  _meta?: { [x: string]: unknown };
 }
 
 export interface LanguageInfo {

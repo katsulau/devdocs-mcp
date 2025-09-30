@@ -1,4 +1,21 @@
-import { ServerConfig } from '../types/index.js';
+export interface ServerConfig {
+  storage: {
+    documentsPath: string;
+    indexPath: string;
+    cachePath: string;
+  };
+  devdocs: {
+    baseUrl: string;
+  };
+  search: {
+    maxResults: number;
+    snippetLength: number;
+  };
+  logging: {
+    level: 'debug' | 'info' | 'warn' | 'error';
+    format: 'json' | 'text' | 'plain';
+  };
+}
 
 const DEFAULT_CONFIG: ServerConfig = {
   storage: {

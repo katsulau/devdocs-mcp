@@ -1,4 +1,5 @@
-import { SearchHit, LanguageInfo, McpToolResponse } from './types';
+import {LanguageInfo, McpToolResponse} from './types';
+import {SearchHit} from "../service/document/types";
 
 export function escapeUrlForMarkdown(url: string): string {
   if (!url || url === '#') return '#';
@@ -94,8 +95,7 @@ export function toErrorResponse(message: string): McpToolResponse {
     content: [{
       type: 'text',
       text: message
-    }],
-    isError: true
+    }]
   };
 }
 
@@ -116,5 +116,3 @@ Available languages: ${availableNames}${moreCount}
 
 Please check the language name and try again.`);
 }
-
-

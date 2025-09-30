@@ -1,5 +1,13 @@
-import { ServerConfig } from '../types/index.js';
-import { LogEntry } from './types/index.js';
+import {ServerConfig} from "./config";
+
+export interface LogEntry {
+  timestamp: string;
+  level: 'debug' | 'info' | 'warn' | 'error';
+  component: 'mcp-server' | 'document-manager' | 'search-engine';
+  message: string;
+  metadata?: Record<string, any>;
+}
+
 
 export class Logger {
   private config: ServerConfig['logging'];

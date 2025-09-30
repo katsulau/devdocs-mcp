@@ -1,9 +1,9 @@
-import { 
-  DocumentLanguage, 
-  ServerConfig,
-} from '../types';
-import { Logger } from '../utils/logger.js';
-import {SearchSpecificDocsInput} from "../mcp/types";
+import {
+  DocumentLanguage, SearchHit,
+} from './types';
+import { Logger } from '../../utils/logger';
+import {SearchSpecificDocsInput} from "../../mcp/types";
+import {ServerConfig} from "../../utils/config";
 
 export class DevDocsManager {
   private config: ServerConfig;
@@ -47,54 +47,61 @@ export class DevDocsManager {
       const type = lang.type || '';
       const alias = lang.alias || '';
 
-      const candidates = [
-        { value: name, weight: 100 },
-        { value: displayName, weight: 95 },
-        { value: slug, weight: 90 },
-        { value: alias, weight: 85 },
-        { value: type, weight: 20 }, // type is very generic; low weight
-      ];
+      // Exact matches get highest score
+      if (name.toLowerCase() === inputLower) return 100;
+      if (displayName.toLowerCase() === inputLower) return 95;
+      if (slug.toLowerCase() === inputLower) return 90;
+      if (alias.toLowerCase() === inputLower) return 85;
 
-      let maxScore = 0;
-      for (const { value, weight } of candidates) {
-        const v = (value || '').toLowerCase();
-        if (!v) continue;
-        if (v === inputLower) {
-          maxScore = Math.max(maxScore, weight + 10); // exact match bonus
-        } else if (v.includes(inputLower) || inputLower.includes(v)) {
-          maxScore = Math.max(maxScore, weight);
+      // Partial matches
+      if (name.toLowerCase().includes(inputLower)) return 70;
+      if (displayName.toLowerCase().includes(inputLower)) return 65;
+      if (slug.toLowerCase().includes(inputLower)) return 60;
+      if (type.toLowerCase().includes(inputLower)) return 50;
+
+      // No match
+      return 0;
+    }
+
+    // Find best matching language
+    const scoredLanguages = availableLanguages.map(lang => ({
+      language: lang,
+      score: scoreLanguage(lang)
+    })).filter(item => item.score > 0);
+
+    if (scoredLanguages.length === 0) {
+      throw new Error(`No matching language found for input: "${languageInput}"`);
+    }
+
+    // Sort by score (highest first)
+    scoredLanguages.sort((a, b) => b.score - a.score);
+    const selected = scoredLanguages[0].language;
+
+    // Find best matching version
+    let chosenVersion: string | undefined = undefined;
+    if (inferredVersion) {
+      // Try to find exact version match
+      const exactMatch = selected.versions.find(v => v.version === inferredVersion);
+      if (exactMatch) {
+        chosenVersion = exactMatch.version;
+      } else {
+        // Try to find partial version match
+        const partialMatch = selected.versions.find(v => v.version.includes(inferredVersion!));
+        if (partialMatch) {
+          chosenVersion = partialMatch.version;
         }
       }
-      return maxScore;
     }
 
-    let best: { lang: DocumentLanguage; score: number } | null = null;
-    for (const lang of availableLanguages) {
-      const score = scoreLanguage(lang);
-      if (!best || score > best.score) {
-        best = { lang, score };
-      }
+    // If no version found, use default
+    if (!chosenVersion) {
+      const defaultVersion = selected.versions.find(v => v.isDefault);
+      chosenVersion = defaultVersion?.version;
     }
 
-    if (!best || best.score === 0) {
-      throw new Error(`Language "${languageInput}" not found`);
-    }
-
-    const selected = best.lang;
-
-    // Choose version: explicit > inferred > default > first available
-    let chosenVersion: string | undefined = undefined;
-    const versions = selected.versions || [];
-    const versionStrings = versions.map(v => v.version);
-    if (versionInput && versionStrings.includes(versionInput)) {
-      chosenVersion = versionInput;
-    } else if (inferredVersion && versionStrings.includes(inferredVersion)) {
-      chosenVersion = inferredVersion;
-    } else {
-      const def = versions.find(v => v.isDefault);
-      chosenVersion = def ? def.version : versions[0]?.version;
-    }
-
+    const versionStrings = selected.versions.map(v => v.version);
+    this.logger.info('document-manager', `resolveLanguage: input="${languageInput}" version="${versionInput || ''}"`);
+    this.logger.info('document-manager', `resolveLanguage: candidates=[${scoredLanguages.map(s => `${s.language.name}:${s.score}`).join(',')}]`);
     this.logger.info('document-manager', `resolveLanguage: selected name=${selected.name} display=${selected.displayName} slug=${selected.slug}`);
     this.logger.info('document-manager', `resolveLanguage: chosenVersion="${chosenVersion || ''}" versions=[${versionStrings.join(',')}]`);
     this.logger.info('document-manager', `resolveLanguage: langSlug=${selected.slug}`);
@@ -102,9 +109,6 @@ export class DevDocsManager {
     return { language: selected, version: chosenVersion, langSlug: selected.slug };
   }
 
-  /**
-   * Get list of available languages from DevDocs API
-   */
   async getAvailableLanguages(): Promise<DocumentLanguage[]> {
     try {
       this.logger.info('document-manager', 'Fetching available languages from DevDocs API');
@@ -128,7 +132,7 @@ export class DevDocsManager {
   /**
    * Search documentation by explicit slug (no language resolution heuristic)
    */
-  async searchDocumentationBySlug(input: SearchSpecificDocsInput): Promise<any[]> {
+  async searchDocumentationBySlug(input: SearchSpecificDocsInput): Promise<SearchHit[]> {
     const { slug, query, limit } = input;
     try {
       const langSlug = slug.trim();
@@ -154,7 +158,7 @@ export class DevDocsManager {
           title: entry.name || 'Untitled',
           url: `${this.devdocsBaseUrl}/docs/${langSlug}/${entry.path}`,
           content: entry.name || '',
-          relevanceScore: 1.0
+          language: langSlug
         }));
 
       this.logger.info('document-manager', `Found ${results.length} search results by slug`);
