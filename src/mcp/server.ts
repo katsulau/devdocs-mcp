@@ -9,6 +9,8 @@ import {
 
 import { DevDocsManager } from '../document/devdocs-manager.js';
 import { SearchDocsInput, DownloadDocsInput, ServerConfig, SearchSpecificDocsInput } from '../types/index.js';
+import { validateSearchDocsInput, validateDownloadDocsInput, validateSearchSpecificDocsInput } from './validators.js';
+import { escapeUrlForMarkdown, toDisplayUrl } from './converters.js';
 import { Logger } from '../utils/logger.js';
 
 export class DevDocsMCPServer {
@@ -18,29 +20,7 @@ export class DevDocsMCPServer {
   private config: ServerConfig;
   private httpServer?: import('http').Server;
 
-  /**
-   * Escape URL for markdown links to ensure proper rendering
-   */
-  private escapeUrlForMarkdown(url: string): string {
-    if (!url || url === '#') return '#';
-    
-    // Replace spaces with %20
-    let escapedUrl = url.replace(/ /g, '%20');
-    
-    // Ensure parentheses are properly encoded
-    escapedUrl = escapedUrl.replace(/\(/g, '%28').replace(/\)/g, '%29');
-    
-    // Ensure other special characters are encoded
-    escapedUrl = escapedUrl.replace(/\[/g, '%5B').replace(/\]/g, '%5D');
-    escapedUrl = escapedUrl.replace(/\{/g, '%7B').replace(/\}/g, '%7D');
-    escapedUrl = escapedUrl.replace(/\+/g, '%2B');
-    escapedUrl = escapedUrl.replace(/\|/g, '%7C');
-    escapedUrl = escapedUrl.replace(/\\/g, '%5C');
-    escapedUrl = escapedUrl.replace(/\^/g, '%5E');
-    escapedUrl = escapedUrl.replace(/`/g, '%60');
-    
-    return escapedUrl;
-  }
+  // URL escaping is handled in converters.ts
 
   constructor(config: ServerConfig, logger: Logger) {
     this.config = config;
@@ -63,38 +43,7 @@ export class DevDocsMCPServer {
     this.setupHandlers();
   }
 
-  private validateSearchDocsInput(args: unknown): SearchDocsInput {
-    const input = args as Record<string, unknown>;
-    if (!input || typeof input !== 'object') {
-      throw new Error('Invalid arguments: expected object');
-    }
-    if (typeof input.query !== 'string') {
-      throw new Error('Invalid arguments: query must be a string');
-    }
-    if (typeof input.language !== 'string') {
-      throw new Error('Invalid arguments: language must be a string');
-    }
-    return {
-      query: input.query,
-      language: input.language,
-      version: typeof input.version === 'string' ? input.version : undefined,
-      limit: typeof input.limit === 'number' ? input.limit : undefined,
-    };
-  }
-
-  private validateDownloadDocsInput(args: unknown): DownloadDocsInput {
-    const input = args as Record<string, unknown>;
-    if (!input || typeof input !== 'object') {
-      throw new Error('Invalid arguments: expected object');
-    }
-    if (typeof input.language !== 'string') {
-      throw new Error('Invalid arguments: language must be a string');
-    }
-    return {
-      language: input.language,
-      version: typeof input.version === 'string' ? input.version : undefined,
-    };
-  }
+  // Validation moved to validators.ts
 
   private setupHandlers(): void {
     // List available resources
@@ -225,17 +174,15 @@ export class DevDocsMCPServer {
 
       switch (name) {
         case 'search_docs':
-          const searchInput = this.validateSearchDocsInput(args);
+          const searchInput = validateSearchDocsInput(args);
           return await this.handleSearchDocs(searchInput);
         
         case 'view_available_docs':
-          const downloadInput = this.validateDownloadDocsInput(args);
+          const downloadInput = validateDownloadDocsInput(args);
           return await this.handleDownloadDocs(downloadInput);
-        
-        
-        
+
         case 'search_specific_docs':
-          const specificInput = this.validateSearchSpecificDocsInput(args);
+          const specificInput = validateSearchSpecificDocsInput(args);
           return await this.handleSearchSpecificDocs(specificInput);
         
         default:
@@ -273,14 +220,14 @@ export class DevDocsMCPServer {
 
       const limited = searchResults.slice(0, input.limit || this.config.search.maxResults);
       const results = limited.map((result: any) => {
-        const escapedUrl = this.escapeUrlForMarkdown(result.url || '#');
-        const cleanUrl = escapedUrl.replace('/docs/', '/');
+        const escapedUrl = escapeUrlForMarkdown(result.url || '#');
+        const cleanUrl = toDisplayUrl(escapedUrl);
         const snippet = result.content
           ? (result.content as string).substring(0, this.config.search.snippetLength) + '...'
           : 'No content';
         return {
           title: result.title || 'Untitled',
-          displayUrl: cleanUrl.replace('devdocs:9292', 'localhost:9292'),
+          displayUrl: cleanUrl,
           snippet,
           language: input.language.toLowerCase(),
         };
@@ -314,24 +261,6 @@ export class DevDocsMCPServer {
     }
   }
 
-  private validateSearchSpecificDocsInput(args: unknown): SearchSpecificDocsInput {
-    const input = args as Record<string, unknown>;
-    if (!input || typeof input !== 'object') {
-      throw new Error('Invalid arguments: expected object');
-    }
-    if (typeof input.slug !== 'string') {
-      throw new Error('Invalid arguments: slug must be a string');
-    }
-    if (typeof input.query !== 'string') {
-      throw new Error('Invalid arguments: query must be a string');
-    }
-    return {
-      slug: input.slug,
-      query: input.query,
-      limit: typeof input.limit === 'number' ? input.limit : undefined
-    };
-  }
-
   private async handleSearchSpecificDocs(input: SearchSpecificDocsInput) {
     try {
       this.logger.info('mcp-server', `Searching by slug: ${input.slug} for query: ${input.query}`);
@@ -339,14 +268,14 @@ export class DevDocsMCPServer {
 
       const limited = searchResults.slice(0, input.limit || this.config.search.maxResults);
       const results = limited.map((result: any) => {
-        const escapedUrl = this.escapeUrlForMarkdown(result.url || '#');
-        const cleanUrl = escapedUrl.replace('/docs/', '/');
+        const escapedUrl = escapeUrlForMarkdown(result.url || '#');
+        const cleanUrl = toDisplayUrl(escapedUrl);
         const snippet = result.content
           ? (result.content as string).substring(0, this.config.search.snippetLength) + '...'
           : 'No content';
         return {
           title: result.title || 'Untitled',
-          displayUrl: cleanUrl.replace('devdocs:9292', 'localhost:9292'),
+          displayUrl: cleanUrl,
           snippet,
           language: input.slug.toLowerCase(),
         };
@@ -427,8 +356,8 @@ Please check the language name and try again.`,
       // Provide instructions for manual download via browser
       const devdocsUrl = `${this.config.devdocs.baseUrl.replace('devdocs:9292', 'localhost:9292')}`;
       const languageUrl = `${devdocsUrl}/${requestedLang.name}`;
-      const escapedDevdocsUrl = this.escapeUrlForMarkdown(devdocsUrl);
-      const escapedLanguageUrl = this.escapeUrlForMarkdown(languageUrl);
+      const escapedDevdocsUrl = escapeUrlForMarkdown(devdocsUrl);
+      const escapedLanguageUrl = escapeUrlForMarkdown(languageUrl);
       // Remove /docs/ from URL for cleaner display
       const cleanLanguageUrl = escapedLanguageUrl.replace('/docs/', '/');
 
