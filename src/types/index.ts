@@ -49,34 +49,9 @@ export interface ServerConfig {
   };
 }
 
-// Logging types
-export interface LogEntry {
-  timestamp: string;
-  level: 'debug' | 'info' | 'warn' | 'error';
-  component: 'mcp-server' | 'document-manager' | 'search-engine';
-  message: string;
-  metadata?: Record<string, any>;
-}
+// Logging types moved to src/utils/types/index.ts
 
-// MCP Tool input schemas
-export interface SearchDocsInput {
-  query: string;
-  language: string;
-  version?: string;
-  limit?: number;
-}
-
-export interface DownloadDocsInput {
-  language: string;
-  version?: string;
-}
-
-// search by slug input
-export interface SearchSpecificDocsInput {
-  slug: string; // e.g., "openjdk~21", "python~3.11"
-  query: string; // text to search within the slug's index
-  limit?: number;
-}
+// MCP Tool input schemas moved to src/mcp/types/index.ts
 
 export interface DevDocsLanguageInfo {
   name: string;

@@ -8,7 +8,8 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { DevDocsManager } from '../document/devdocs-manager.js';
-import { DownloadDocsInput, ServerConfig, SearchSpecificDocsInput } from '../types/index.js';
+import { ServerConfig } from '../types';
+import { DownloadDocsInput, SearchSpecificDocsInput } from './types';
 import { validateDownloadDocsInput, validateSearchSpecificDocsInput } from './validators.js';
 import { escapeUrlForMarkdown, toDisplayUrl } from './converters.js';
 import { Logger } from '../utils/logger.js';

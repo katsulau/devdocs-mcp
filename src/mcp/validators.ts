@@ -1,4 +1,4 @@
-import { DownloadDocsInput, SearchSpecificDocsInput } from '../types/index.js';
+import { DownloadDocsInput, SearchSpecificDocsInput } from './types/index.js';
 
 export function validateDownloadDocsInput(args: unknown): DownloadDocsInput {
   const input = args as Record<string, unknown>;

@@ -1,4 +1,5 @@
-import { LogEntry, ServerConfig } from '../types/index.js';
+import { ServerConfig } from '../types/index.js';
+import { LogEntry } from './types/index.js';
 
 export class Logger {
   private config: ServerConfig['logging'];

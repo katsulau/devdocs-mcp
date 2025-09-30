@@ -1,10 +1,9 @@
 import { 
   DocumentLanguage, 
-  DocumentVersion, 
   ServerConfig,
-  SearchSpecificDocsInput
-} from '../types/index.js';
+} from '../types';
 import { Logger } from '../utils/logger.js';
+import {SearchSpecificDocsInput} from "../mcp/types";
 
 export class DevDocsManager {
   private config: ServerConfig;
