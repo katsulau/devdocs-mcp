@@ -127,49 +127,6 @@ export class DevDocsManager {
   }
 
   /**
-   * Search documentation for specified query, language and version
-   */
-  async searchDocumentation(query: string, language: string, version?: string): Promise<any[]> {
-    try {
-      // Resolve language input across name/displayName/slug/alias/type
-      const resolved = await this.resolveLanguage(language, version);
-      const langSlug = resolved.langSlug;
-      this.logger.info('document-manager', `Searching for "${query}" in ${langSlug}`);
-
-      // DevDocs documentation index API endpoint
-      const docUrl = `${this.devdocsBaseUrl}/docs/${langSlug}/index.json`;
-      
-      const response = await fetch(docUrl);
-      if (!response.ok) {
-        throw new Error(`Documentation not available: ${response.statusText}`);
-      }
-
-      const docData = await response.json() as { entries: any[], types: any[] };
-      
-      // Simple text search in entries
-      const searchResults = docData.entries
-        .filter(entry => {
-          const searchText = `${entry.name || ''} ${entry.path || ''}`.toLowerCase();
-          return searchText.includes(query.toLowerCase());
-        })
-        .slice(0, 10) // Limit to 10 results
-        .map(entry => ({
-          title: entry.name || 'Untitled',
-          url: `${this.devdocsBaseUrl}/docs/${langSlug}/${entry.path}`,
-          content: entry.name || '',
-          relevanceScore: 1.0 // Simple relevance for now
-        }));
-
-      this.logger.info('document-manager', `Found ${searchResults.length} search results`);
-      
-      return searchResults;
-    } catch (error) {
-      this.logger.error('document-manager', `Error searching documentation: ${error}`);
-      throw error;
-    }
-  }
-
-  /**
    * Search documentation by explicit slug (no language resolution heuristic)
    */
   async searchDocumentationBySlug(input: SearchSpecificDocsInput): Promise<any[]> {

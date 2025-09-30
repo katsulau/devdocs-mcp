@@ -8,8 +8,8 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { DevDocsManager } from '../document/devdocs-manager.js';
-import { SearchDocsInput, DownloadDocsInput, ServerConfig, SearchSpecificDocsInput } from '../types/index.js';
-import { validateSearchDocsInput, validateDownloadDocsInput, validateSearchSpecificDocsInput } from './validators.js';
+import { DownloadDocsInput, ServerConfig, SearchSpecificDocsInput } from '../types/index.js';
+import { validateDownloadDocsInput, validateSearchSpecificDocsInput } from './validators.js';
 import { escapeUrlForMarkdown, toDisplayUrl } from './converters.js';
 import { Logger } from '../utils/logger.js';
 
@@ -96,33 +96,6 @@ export class DevDocsMCPServer {
       return {
         tools: [
           {
-            name: 'search_docs',
-            description: 'Search DevDocs documentation for specified language and version using HTTP API',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                query: {
-                  type: 'string',
-                  description: 'Search query',
-                },
-                language: {
-                  type: 'string',
-                  description: 'Target language',
-                },
-                version: {
-                  type: 'string',
-                  description: 'Target version (default if omitted)',
-                },
-                limit: {
-                  type: 'number',
-                  default: 10,
-                  description: 'Maximum number of results',
-                },
-              },
-              required: ['query', 'language'],
-            },
-          },
-          {
             name: 'search_specific_docs',
             description: 'Search DevDocs by explicit slug (e.g., openjdk~21) and query',
             inputSchema: {
@@ -173,10 +146,6 @@ export class DevDocsMCPServer {
       this.logger.debug('mcp-server', `Calling tool: ${name}`, { args });
 
       switch (name) {
-        case 'search_docs':
-          const searchInput = validateSearchDocsInput(args);
-          return await this.handleSearchDocs(searchInput);
-        
         case 'view_available_docs':
           const downloadInput = validateDownloadDocsInput(args);
           return await this.handleDownloadDocs(downloadInput);
@@ -191,75 +160,6 @@ export class DevDocsMCPServer {
     });
   }
 
-  private async handleSearchDocs(input: SearchDocsInput) {
-    try {
-      this.logger.info('mcp-server', `Searching docs for: ${input.query} in ${input.language}${input.version ? ` v${input.version}` : ''}`);
-      
-      const searchResults = await this.devDocsManager.searchDocumentation(
-        input.query,
-        input.language,
-        input.version
-      );
-      
-      if (searchResults.length === 0) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify({
-                type: 'devdocs_result',
-                query: input.query,
-                language: input.language,
-                version: input.version || 'latest',
-                results: [],
-              })
-            },
-          ],
-        };
-      }
-
-      const limited = searchResults.slice(0, input.limit || this.config.search.maxResults);
-      const results = limited.map((result: any) => {
-        const escapedUrl = escapeUrlForMarkdown(result.url || '#');
-        const cleanUrl = toDisplayUrl(escapedUrl);
-        const snippet = result.content
-          ? (result.content as string).substring(0, this.config.search.snippetLength) + '...'
-          : 'No content';
-        return {
-          title: result.title || 'Untitled',
-          displayUrl: cleanUrl,
-          snippet,
-          language: input.language.toLowerCase(),
-        };
-      });
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify({
-              type: 'devdocs_result',
-              query: input.query,
-              language: input.language,
-              version: input.version || 'latest',
-              results,
-            })
-          },
-        ],
-      };
-    } catch (error) {
-      this.logger.error('mcp-server', `Search failed: ${error}`);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `Search failed: ${error}`,
-          },
-        ],
-        isError: true,
-      };
-    }
-  }
 
   private async handleSearchSpecificDocs(input: SearchSpecificDocsInput) {
     try {
