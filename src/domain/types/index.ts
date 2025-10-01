@@ -16,11 +16,3 @@ export interface DocumentVersion {
   size?: number;          // Document size in bytes
   path: string;           // Local storage path
 }
-
-// MCP-specific domain models (converted from external APIs)
-export interface SearchHit {
-  title: string;
-  url: string;
-  content?: string;
-  language: string;
-}

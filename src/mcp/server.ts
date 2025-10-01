@@ -168,12 +168,9 @@ export class DevDocsMCPServer {
       const limit = Limit.create(input.limit);
       this.logger.info('mcp-server', `Searching by slug: ${input.slug} for query: ${input.query}`);
       const searchResults = await this.devDocsManager.searchDocumentationBySlug(slug, query, limit);
-      
-      return toSearchResponse(searchResults, {
-        query: input.query,
-        slug: input.slug,
-        maxResults: input.limit || this.config.search.maxResults,
-        snippetLength: this.config.search.snippetLength,
+      return toSearchResponse(searchResults.searchHits, {
+        query: query,
+        slug: slug
       });
     } catch (error) {
       this.logger.error('mcp-server', `Search by slug failed: ${error}`);

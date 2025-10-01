@@ -1,6 +1,7 @@
-import { DocumentLanguage, SearchHit } from '../domain/types';
-import { SearchSpecificDocsInput } from '../mcp/types';
+import { DocumentLanguage } from '../domain/types';
 import {DevDocsRepository} from "../domain/repository/devdocs-repository";
+import {Slug} from "../domain/values/Slug.js";
+import {SearchHit, SearchHits} from "../domain/SearchHits.js";
 
 
 /**
@@ -35,37 +36,25 @@ export class HttpDevDocsRepository implements DevDocsRepository {
     }
   }
 
-  async searchDocumentationBySlug(input: SearchSpecificDocsInput): Promise<SearchHit[]> {
-    const { slug, query, limit } = input;
+  async searchDocumentationBySlug(slug: Slug): Promise<SearchHits> {
     try {
-      const langSlug = slug.trim();
-      if (!langSlug) {
-        throw new Error('slug is required');
-      }
-      this.logger.info('devdocs-repository', `Searching by slug "${langSlug}" for query "${query}"`);
-
-      const docUrl = `${this.baseUrl}/docs/${langSlug}/index.json`;
+      const docUrl = `${this.baseUrl}/docs/${slug.toString()}/index.json`;
       const response = await fetch(docUrl);
       if (!response.ok) {
-        throw new Error(`Documentation not available for slug ${langSlug}: ${response.statusText}`);
+        throw new Error(`Documentation not available for slug ${slug.toString()}: ${response.statusText}`);
       }
 
       const docData = await response.json() as { entries: any[], types: any[] };
-      const results = docData.entries
-        .filter(entry => {
-          const searchText = `${entry.name || ''} ${entry.path || ''}`.toLowerCase();
-          return searchText.includes(query.toLowerCase());
-        })
-        .slice(0, typeof limit === 'number' ? limit : 10)
+      const results: SearchHit[] = docData.entries
         .map(entry => ({
           title: entry.name || 'Untitled',
-          url: `${this.baseUrl}/docs/${langSlug}/${entry.path}`,
-          content: entry.name || '',
-          language: langSlug
+          url: `http://localhost:9292/${slug.toString()}/${entry.path}`,
+          path: entry.path || '',
+          type: entry.type || '',
+          slug: slug
         }));
-
       this.logger.info('devdocs-repository', `Found ${results.length} search results by slug`);
-      return results;
+      return SearchHits.create(results);
     } catch (error) {
       this.logger.error('devdocs-repository', `Error searching by slug: ${error}`);
       throw error;

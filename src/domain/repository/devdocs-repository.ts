@@ -1,5 +1,6 @@
-import {DocumentLanguage, SearchHit} from "../types";
-import {SearchSpecificDocsInput} from "../../mcp/types";
+import {DocumentLanguage} from "../types";
+import {Slug} from "../values/Slug.js";
+import {SearchHits} from "../SearchHits";
 
 /**
  * Repository interface for DevDocs data access
@@ -13,5 +14,5 @@ export interface DevDocsRepository {
     /**
      * Search documentation by slug
      */
-    searchDocumentationBySlug(input: SearchSpecificDocsInput): Promise<SearchHit[]>;
+    searchDocumentationBySlug(slug: Slug): Promise<SearchHits>;
 }

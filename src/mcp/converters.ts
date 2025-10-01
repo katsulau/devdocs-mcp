@@ -1,5 +1,7 @@
 import {LanguageInfo, McpToolResponse} from './types';
-import {SearchHit} from "../domain/types";
+import {SearchHit} from "../domain/SearchHits.js";
+import {Slug} from "../domain/values/Slug.js";
+import {Query} from "../domain/values/Query.js";
 
 export function escapeUrlForMarkdown(url: string): string {
   if (!url || url === '#') return '#';
@@ -26,20 +28,16 @@ export function toDisplayUrl(devdocsUrl: string): string {
 export function toSearchResponse(
   results: SearchHit[],
   options: {
-    query: string;
-    slug: string;
-    maxResults: number;
-    snippetLength: number;
+    query: Query;
+    slug: Slug;
   }
 ): McpToolResponse {
-  const limited = results.slice(0, options.maxResults);
-  const formattedResults = limited.map(result => ({
-    title: result.title || 'Untitled',
-    displayUrl: toDisplayUrl(escapeUrlForMarkdown(result.url || '#')),
-    snippet: result.content 
-      ? result.content.substring(0, options.snippetLength) + '...'
-      : 'No content',
-    language: options.slug.toLowerCase(),
+
+  const formattedResults = results.map(result => ({
+    title: result.title,
+    displayUrl: escapeUrlForMarkdown(result.url || '#'),
+    snippet: result.title,
+    language: options.slug.toString(),
   }));
 
   return {
@@ -47,8 +45,8 @@ export function toSearchResponse(
       type: 'text',
       text: JSON.stringify({
         type: 'devdocs_result',
-        query: options.query,
-        slug: options.slug,
+        query: options.query.toString(),
+        slug: options.slug.toString(),
         results: formattedResults,
       })
     }]
