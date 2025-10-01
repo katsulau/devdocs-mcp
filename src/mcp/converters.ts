@@ -1,5 +1,5 @@
 import {LanguageInfo, McpToolResponse} from './types';
-import {SearchHit} from "../service/document/types";
+import {SearchHit} from "../domain/types";
 
 export function escapeUrlForMarkdown(url: string): string {
   if (!url || url === '#') return '#';

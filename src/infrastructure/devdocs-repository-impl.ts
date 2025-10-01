@@ -1,29 +1,16 @@
-import { DocumentLanguage, SearchHit } from '../types';
-import { SearchSpecificDocsInput } from '../../../mcp/types';
+import { DocumentLanguage, SearchHit } from '../domain/types';
+import { SearchSpecificDocsInput } from '../mcp/types';
+import {DevDocsRepository} from "../domain/repository/devdocs-repository";
 
-/**
- * Repository interface for DevDocs data access
- */
-export interface DevDocsRepository {
-  /**
-   * Fetch available languages from DevDocs API
-   */
-  fetchAvailableLanguages(): Promise<DocumentLanguage[]>;
-
-  /**
-   * Search documentation by slug
-   */
-  searchDocumentationBySlug(input: SearchSpecificDocsInput): Promise<SearchHit[]>;
-}
 
 /**
  * HTTP implementation of DevDocsRepository
  */
 export class HttpDevDocsRepository implements DevDocsRepository {
   private readonly baseUrl: string;
-  private readonly logger: import('../../../utils/logger').Logger;
+  private readonly logger: import('../utils/logger').Logger;
 
-  constructor(baseUrl: string, logger: import('../../../utils/logger').Logger) {
+  constructor(baseUrl: string, logger: import('../utils/logger').Logger) {
     this.baseUrl = baseUrl;
     this.logger = logger;
   }

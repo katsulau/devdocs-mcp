@@ -13,6 +13,9 @@ import { validateDownloadDocsInput, validateSearchSpecificDocsInput } from './va
 import { toSearchResponse, toAvailabilityGuide, toErrorResponse, toLanguageNotFoundError } from './converters.js';
 import { Logger } from '../utils/logger.js';
 import {ServerConfig} from "../utils/config";
+import {Slug} from "../domain/values/Slug.js";
+import {Query} from "../domain/values/Query.js";
+import {Limit} from "../domain/values/Limit.js";
 
 export class DevDocsMCPServer {
   private server: Server;
@@ -159,8 +162,12 @@ export class DevDocsMCPServer {
 
   private async handleSearchSpecificDocs(input: SearchSpecificDocsInput) {
     try {
+
+      const slug = Slug.create(input.slug);
+      const query = Query.create(input.query);
+      const limit = Limit.create(input.limit);
       this.logger.info('mcp-server', `Searching by slug: ${input.slug} for query: ${input.query}`);
-      const searchResults = await this.devDocsManager.searchDocumentationBySlug(input);
+      const searchResults = await this.devDocsManager.searchDocumentationBySlug(slug, query, limit);
       
       return toSearchResponse(searchResults, {
         query: input.query,

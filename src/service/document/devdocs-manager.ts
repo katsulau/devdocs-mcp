@@ -1,9 +1,11 @@
 import {
   DocumentLanguage, SearchHit,
-} from './types';
+} from '../../domain/types';
 import { Logger } from '../../utils/logger';
-import {SearchSpecificDocsInput} from "../../mcp/types";
 import {ServerConfig} from "../../utils/config";
+import {Slug} from "../../domain/values/Slug.js";
+import {Query} from "../../domain/values/Query.js";
+import {Limit} from "../../domain/values/Limit.js";
 
 export class DevDocsManager {
   private config: ServerConfig;
@@ -132,33 +134,28 @@ export class DevDocsManager {
   /**
    * Search documentation by explicit slug (no language resolution heuristic)
    */
-  async searchDocumentationBySlug(input: SearchSpecificDocsInput): Promise<SearchHit[]> {
-    const { slug, query, limit } = input;
+  async searchDocumentationBySlug(slug: Slug, query: Query, limit: Limit): Promise<SearchHit[]> {
     try {
-      const langSlug = slug.trim();
-      if (!langSlug) {
-        throw new Error('slug is required');
-      }
-      this.logger.info('document-manager', `Searching by slug "${langSlug}" for query "${query}"`);
+      this.logger.info('document-manager', `Searching by slug "${slug.toString()}" for query "${query}"`);
 
-      const docUrl = `${this.devdocsBaseUrl}/docs/${langSlug}/index.json`;
+      const docUrl = `${this.devdocsBaseUrl}/docs/${slug.toString()}/index.json`;
       const response = await fetch(docUrl);
       if (!response.ok) {
-        throw new Error(`Documentation not available for slug ${langSlug}: ${response.statusText}`);
+        throw new Error(`Documentation not available for slug ${slug.toString()}: ${response.statusText}`);
       }
 
       const docData = await response.json() as { entries: any[], types: any[] };
       const results = docData.entries
         .filter(entry => {
           const searchText = `${entry.name || ''} ${entry.path || ''}`.toLowerCase();
-          return searchText.includes(query.toLowerCase());
+          return searchText.includes(query.toString().toLowerCase());
         })
-        .slice(0, typeof limit === 'number' ? limit : 10)
+        .slice(0, limit.toNumber())
         .map(entry => ({
           title: entry.name || 'Untitled',
-          url: `${this.devdocsBaseUrl}/docs/${langSlug}/${entry.path}`,
+          url: `${this.devdocsBaseUrl}/docs/${slug.toString()}/${entry.path}`,
           content: entry.name || '',
-          language: langSlug
+          language: slug.toString()
         }));
 
       this.logger.info('document-manager', `Found ${results.length} search results by slug`);
