@@ -3,7 +3,7 @@ import {ServerConfig} from "./config";
 export interface LogEntry {
   timestamp: string;
   level: 'debug' | 'info' | 'warn' | 'error';
-  component: 'mcp-server' | 'document-manager' | 'search-engine';
+  component: 'mcp-server' | 'document-manager' | 'search-engine' | 'devdocs-repository';
   message: string;
   metadata?: Record<string, any>;
 }
