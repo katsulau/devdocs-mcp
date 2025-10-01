@@ -6,6 +6,8 @@ import {ServerConfig} from "../../utils/config";
 import {Slug} from "../../domain/values/Slug.js";
 import {Query} from "../../domain/values/Query.js";
 import {Limit} from "../../domain/values/Limit.js";
+import {Language} from "../../domain/values/Language.js";
+import {Version} from "../../domain/values/Version.js";
 import {DevDocsRepository} from "../../domain/repository/devdocs-repository";
 import {HttpDevDocsRepository} from "../../infrastructure/devdocs-repository-impl.js";
 import {SearchHits} from "../../domain/SearchHits";
@@ -14,7 +16,7 @@ export class DevDocsManager {
   private config: ServerConfig;
   private logger: Logger;
   private devdocsBaseUrl: string;
-  private devDocsRepository: DevDocsRepository
+  public readonly devDocsRepository: DevDocsRepository
 
   constructor(config: ServerConfig, logger: Logger) {
     this.config = config;
@@ -28,20 +30,11 @@ export class DevDocsManager {
    * DocumentLanguage and version. If version is not provided, try to infer from input and
    * otherwise fall back to the default version.
    */
-  async resolveLanguage(languageInput: string, versionInput?: string): Promise<{ language: DocumentLanguage; version?: string; langSlug: string; }> {
-    const input = (languageInput || '').trim();
-    const inputLower = input.toLowerCase();
+  async resolveLanguage(language: Language, version?: Version): Promise<{ language: DocumentLanguage; version?: string; langSlug: string; }> {
+    const inputLower = language.toLowerCase();
+    const inferredVersion = version?.toString();
 
-    // Try to extract a version from the language input if not explicitly provided (e.g., "Java 17")
-    let inferredVersion = versionInput && versionInput.trim() ? versionInput.trim() : undefined;
-    if (!inferredVersion) {
-      const versionMatch = inputLower.match(/\b(\d+(?:\.\d+)*)\b/);
-      if (versionMatch) {
-        inferredVersion = versionMatch[1];
-      }
-    }
-
-    const availableLanguages = await this.getAvailableLanguages();
+    const availableLanguages = await this.devDocsRepository.fetchAvailableLanguages();
     if (!availableLanguages || availableLanguages.length === 0) {
       throw new Error('No available languages found from DevDocs');
     }
@@ -77,7 +70,7 @@ export class DevDocsManager {
     })).filter(item => item.score > 0);
 
     if (scoredLanguages.length === 0) {
-      throw new Error(`No matching language found for input: "${languageInput}"`);
+      throw new Error(`No matching language found for input: "${language.toString()}"`);
     }
 
     // Sort by score (highest first)
@@ -93,7 +86,7 @@ export class DevDocsManager {
         chosenVersion = exactMatch.version;
       } else {
         // Try to find partial version match
-        const partialMatch = selected.versions.find(v => v.version.includes(inferredVersion!));
+        const partialMatch = selected.versions.find(v => v.version.includes(inferredVersion));
         if (partialMatch) {
           chosenVersion = partialMatch.version;
         }
@@ -107,7 +100,7 @@ export class DevDocsManager {
     }
 
     const versionStrings = selected.versions.map(v => v.version);
-    this.logger.info('document-manager', `resolveLanguage: input="${languageInput}" version="${versionInput || ''}"`);
+    this.logger.info('document-manager', `resolveLanguage: input="${language.toString()}" version="${version?.toString() || ''}"`);
     this.logger.info('document-manager', `resolveLanguage: candidates=[${scoredLanguages.map(s => `${s.language.name}:${s.score}`).join(',')}]`);
     this.logger.info('document-manager', `resolveLanguage: selected name=${selected.name} display=${selected.displayName} slug=${selected.slug}`);
     this.logger.info('document-manager', `resolveLanguage: chosenVersion="${chosenVersion || ''}" versions=[${versionStrings.join(',')}]`);
@@ -116,25 +109,6 @@ export class DevDocsManager {
     return { language: selected, version: chosenVersion, langSlug: selected.slug };
   }
 
-  async getAvailableLanguages(): Promise<DocumentLanguage[]> {
-    try {
-      this.logger.info('document-manager', 'Fetching available languages from DevDocs API');
-      
-      const response = await fetch(`${this.devdocsBaseUrl}/assets/docs.json`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch languages: ${response.statusText}`);
-      }
-
-      const languagesData = await response.json() as Record<string, any>;
-      const languages = this.parseLanguagesFromAPI(languagesData);
-      
-      this.logger.info('document-manager', `Found ${languages.length} available languages`);
-      return languages;
-    } catch (error) {
-      this.logger.error('document-manager', `Error fetching available languages: ${error}`);
-      throw error;
-    }
-  }
 
   /**
    * Search documentation by explicit slug (no language resolution heuristic)
@@ -152,41 +126,4 @@ export class DevDocsManager {
     }
   }
 
-  /**
-   * Parse languages from DevDocs API response
-   */
-  private parseLanguagesFromAPI(apiData: Record<string, any>): DocumentLanguage[] {
-    const languages: Map<string, DocumentLanguage> = new Map();
-
-    for (const key in apiData) {
-      const item = apiData[key];
-      const name = item.slug;
-      const displayName = item.name;
-      const version = item.version || 'latest';
-      const slug = item.slug;
-      const type = item.type;
-        const alias = item.alias || '';
-
-      if (!languages.has(name)) {
-        languages.set(name, {
-          name,
-          displayName,
-          versions: [],
-          slug,
-          type,
-          alias
-        });
-      }
-
-      const lang = languages.get(name)!;
-      lang.versions.push({
-        version,
-        isDefault: !version || version === 'latest',
-        downloadStatus: 'available',
-        path: `${this.devdocsBaseUrl}/docs/${name}`
-      });
-    }
-
-    return Array.from(languages.values());
-  }
 }

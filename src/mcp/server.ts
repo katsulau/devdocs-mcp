@@ -16,6 +16,9 @@ import {ServerConfig} from "../utils/config";
 import {Slug} from "../domain/values/Slug.js";
 import {Query} from "../domain/values/Query.js";
 import {Limit} from "../domain/values/Limit.js";
+import {ValidatedLanguageVersionInput} from "./input/ValidatedLanguageVersionInput.js";
+import {Language} from "../domain/values/Language.js";
+import {Version} from "../domain/values/Version.js";
 
 export class DevDocsMCPServer {
   private server: Server;
@@ -70,7 +73,7 @@ export class DevDocsMCPServer {
       switch (uri) {
         case 'devdocs://languages':
           try {
-            const languages = await this.devDocsManager.getAvailableLanguages();
+            const languages = await this.devDocsManager.devDocsRepository.fetchAvailableLanguages();
             return {
               contents: [
                 {
@@ -182,10 +185,15 @@ export class DevDocsMCPServer {
     try {
       this.logger.info('mcp-server', `Checking docs availability for: ${input.language}${input.version ? ` v${input.version}` : ''}`);
       
-      const resolved = await this.devDocsManager.resolveLanguage(input.language, input.version);
+      // Create ValidatedLanguageVersionInput and convert to domain objects
+      const validatedInput = ValidatedLanguageVersionInput.create(input.language, input.version);
+      const language = new Language(validatedInput.language);
+      const version = validatedInput.version ? new Version(validatedInput.version) : undefined;
+      
+      const resolved = await this.devDocsManager.resolveLanguage(language, version);
       return toAvailabilityGuide(resolved.language, this.config.devdocs.baseUrl);
     } catch (e) {
-      const availableLanguages = await this.devDocsManager.getAvailableLanguages();
+      const availableLanguages = await this.devDocsManager.devDocsRepository.fetchAvailableLanguages();
       return toLanguageNotFoundError(input.language, availableLanguages);
     }
   }
