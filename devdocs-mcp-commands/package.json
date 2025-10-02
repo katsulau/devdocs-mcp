@@ -1,0 +1,30 @@
+{
+  "name": "devdocs-mcp-commands",
+  "version": "1.0.0",
+  "description": "Initialize DevDocs MCP slash commands for Cursor and Claude",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "devdocs-mcp-commands": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "cursor",
+    "claude",
+    "mcp",
+    "devdocs",
+    "slash-commands"
+  ],
+  "author": "katsulau",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.0.0",
+    "fs-extra": "^11.1.1",
+    "chalk": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

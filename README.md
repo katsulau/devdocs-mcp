@@ -86,14 +86,67 @@ Add to your Cursor MCP configuration:
 
 1. Open http://localhost:9292 in your browser
 2. Browse available documentation languages
-3. Click "Enable" on the languages you want to download
-4. Wait for the download to complete
+3. Click "Enable" on the languages you want to download. If no "enabled" link appears, the documentation is already downloaded
+
+
+### 4.5. Setup Slash Commands (Recommended)
+
+Before using the MCP server, we strongly recommend setting up slash commands for easier access to documentation.
+
+#### Quick Setup
+
+* Cursor
+```
+ npx devdocs-mcp-commands --preset cursor
+```
+
+* Claude
+```
+ npx devdocs-mcp-commands --preset claude
+```
+
+
+#### Adding Custom Slash Commands
+
+If you don't find slash commands for the languages you need, you can create your own by following these steps:
+
+1. **Find the slug**: Navigate to the language documentation in DevDocs. For example, if you can access `http://localhost:9292/kotlin~1.9/`, the slug is `"kotlin~1.9"`.
+
+2. **Create the markdown file**: Create a new `.md` file in the appropriate commands directory:
+   - For Cursor: `.cursor/commands/devdocs/`
+   - For Claude: `.claude/commands/devdocs/`
+
+   Use this template:
+   ```markdown
+   # [Language Name] Documentation
+
+   * Use search_specific_docs with slug="[slug]" to search and respond based on the content.
+
+   * Present implementation methods with clickable links to referenced sections.
+   ```
+
+   Example for Kotlin:
+   ```markdown
+   # Kotlin 1.9 Documentation
+
+   * Use search_specific_docs with slug="kotlin~1.9" to search and respond based on the content.
+
+   * Present implementation methods with clickable links to referenced sections.
+   ```
+
+3. **Use the new command**: The slash command will be available as `/devdocs/[filename-without-extension]` (e.g., `/devdocs/kotlin-1.9`).
 
 ### 5. Start Using
 
-Once configured, you can ask your AI editor:
-
-
+Once configured, you can ask your AI editor to search for documentation using the MCP tools or the slash commands you've set up.
+```
+For example:
+   /devdocs/postgresql-17 How to optimize database performance?
+   
+   /devdocs/openjdk-21 How to implement asynchronous processing?
+   
+   /devdocs/python-3.12 How do list comprehensions work?
+```
 ## Configuration
 
 ### Environment Variables

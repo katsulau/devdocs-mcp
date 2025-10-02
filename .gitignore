@@ -56,3 +56,6 @@ docs/
 # Temporary files
 tmp/
 temp/
+
+devdocs-mcp-commands/.cursor/commands/
+devdocs-mcp-commands/.claude/commands/
