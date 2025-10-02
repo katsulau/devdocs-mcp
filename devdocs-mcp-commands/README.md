@@ -23,14 +23,10 @@ npx devdocs-mcp-commands --preset claude
 npx devdocs-mcp-commands cursor
 # or
 npx devdocs-mcp-commands --preset cursor
-```
 
-This will create the following commands in `.cursor/commands/devdocs/`:
-- `/devdocs/search` - Search for documentation
-- `/devdocs/typescript` - TypeScript documentation
-- `/devdocs/javascript` - JavaScript documentation
-- `/devdocs/python` - Python documentation
-- `/devdocs/react` - React documentation
+# Japanese
+ npx devdocs-mcp-commands --preset cursor --lang ja
+```
 
 ### Initialize Claude Commands
 
@@ -38,6 +34,9 @@ This will create the following commands in `.cursor/commands/devdocs/`:
 npx devdocs-mcp-commands claude
 # or
 npx devdocs-mcp-commands --preset claude
+
+# Japanese
+ npx devdocs-mcp-commands --preset claude --lang ja
 ```
 
 This will create the same commands in `.claude/commands/devdocs/`.
@@ -48,31 +47,19 @@ This will create the same commands in `.claude/commands/devdocs/`.
 - DevDocs MCP server running
 - Cursor or Claude Desktop configured with MCP
 
-## Commands Created
-
-### `/devdocs/search`
-Search for available documentation languages and provide clickable links.
-
-### `/devdocs/typescript`
-Search TypeScript documentation specifically.
-
-### `/devdocs/javascript`
-Search JavaScript documentation specifically.
-
-### `/devdocs/python`
-Search Python 3.12 documentation specifically.
-
-### `/devdocs/react`
-Search React documentation specifically.
-
 ## Next Steps
 
 After running the init command:
 
-1. Restart your editor (Cursor or Claude Desktop)
-2. Use the new slash commands
-3. Enable documentation languages at http://localhost:9292
-4. Start searching for documentation!
+Once configured, you can ask your AI editor to search for documentation using the MCP tools or the slash commands you've set up.
+```
+For example:
+   /devdocs/postgresql-17 How to optimize database performance?
+   
+   /devdocs/openjdk-21 How to implement asynchronous processing?
+   
+   /devdocs/python-3.12 How do list comprehensions work?
+```
 
 ## License
 

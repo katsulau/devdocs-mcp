@@ -97,12 +97,20 @@ Before using the MCP server, we strongly recommend setting up slash commands for
 
 * Cursor
 ```
+# English
  npx devdocs-mcp-commands --preset cursor
+ 
+# Japanese
+ npx devdocs-mcp-commands --preset cursor --lang ja
 ```
 
 * Claude
 ```
+# English
  npx devdocs-mcp-commands --preset claude
+ 
+# Japanese
+ npx devdocs-mcp-commands --preset claude --lang ja
 ```
 
 
