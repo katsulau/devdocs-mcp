@@ -1,6 +1,6 @@
 {
   "name": "devdocs-mcp-commands",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Initialize DevDocs MCP slash commands for Cursor and Claude",
   "main": "index.js",
   "type": "module",
