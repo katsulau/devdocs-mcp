@@ -28,8 +28,5 @@ export interface LanguageInfo {
   name: string;
   displayName: string;
   slug: string;
-  versions: Array<{
-    version: string;
-    isDefault: boolean;
-  }>;
+  version: string;
 }

@@ -10,7 +10,7 @@ import {
 import { DevDocsManager } from '../service/document/devdocs-manager.js';
 import { DownloadDocsInput, SearchSpecificDocsInput } from './types';
 import { validateDownloadDocsInput, validateSearchSpecificDocsInput } from './validators.js';
-import { toSearchResponse, toAvailabilityGuide, toErrorResponse, toLanguageNotFoundError } from './converters.js';
+import { toSearchResponse, toAvailabilityGuide, toErrorResponse, toLanguageNotFoundError, toAvailableLanguagesJsonResponse } from './converters.js';
 import { Logger } from '../utils/logger.js';
 import {ServerConfig} from "../utils/config";
 import {Slug} from "../domain/values/Slug.js";
@@ -123,20 +123,20 @@ export class DevDocsMCPServer {
           },
           {
             name: 'view_available_docs',
-            description: 'View available documentation languages and get instructions for accessing them via browser',
+            description: 'View available documentation languages and get instructions for accessing them via browser. If no language is specified, returns first 20 languages in JSON format with slug list.',
             inputSchema: {
               type: 'object',
               properties: {
                 language: {
                   type: 'string',
-                  description: 'Language to download',
+                  description: 'Language to download (optional - if empty, returns all available languages)',
                 },
                 version: {
                   type: 'string',
                   description: 'Version to download',
                 },
               },
-              required: ['language'],
+              required: [],
             },
           },
         ],
@@ -185,13 +185,37 @@ export class DevDocsMCPServer {
     try {
       this.logger.info('mcp-server', `Checking docs availability for: ${input.language}${input.version ? ` v${input.version}` : ''}`);
       
+      // If no specific language is requested, return all available languages in JSON format
+      if (!input.language || input.language.trim() === '') {
+        const availableLanguages = await this.devDocsManager.devDocsRepository.fetchAvailableLanguages();
+        const infos = availableLanguages.map(l => ({
+          name: l.name,
+          displayName: l.displayName,
+          slug: l.slug,
+          version: l.version as unknown as string
+        }));
+        return toAvailableLanguagesJsonResponse(infos);
+      }
+      
       // Create ValidatedLanguageVersionInput and convert to domain objects
       const validatedInput = ValidatedLanguageVersionInput.create(input.language, input.version);
       const language = new Language(validatedInput.language);
       const version = validatedInput.version ? new Version(validatedInput.version) : undefined;
       
-      const resolved = await this.devDocsManager.resolveLanguage(language, version);
-      return toAvailabilityGuide(resolved.language, this.config.devdocs.baseUrl);
+      const resolvedCollection = await this.devDocsManager.getAvailableList(language, version);
+      if (resolvedCollection.isEmpty()) {
+        throw new Error('No matching language found');
+      }
+
+      // Convert DocumentLanguageCollection to LanguageInfo array
+      const resolvedLanguages = resolvedCollection.toArray().map(lang => ({
+        name: lang.name,
+        displayName: lang.displayName,
+        slug: lang.slug,
+        version: lang.version as unknown as string
+      }));
+
+      return toAvailableLanguagesJsonResponse(resolvedLanguages);
     } catch (e) {
       const availableLanguages = await this.devDocsManager.devDocsRepository.fetchAvailableLanguages();
       return toLanguageNotFoundError(input.language, availableLanguages);

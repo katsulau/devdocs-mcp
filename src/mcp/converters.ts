@@ -72,8 +72,8 @@ Since DevDocs doesn't provide a direct download API, please follow these steps t
 2. **Navigate to ${language.displayName}**: [${languageUrl}](${cleanLanguageUrl})
 3. **Browse the documentation** - it will be automatically loaded when you access it
 
-**Available versions for ${language.displayName}:**
-${language.versions.map(v => `- ${v.version}${v.isDefault ? ' (default)' : ''}`).join('\n')}
+**Available version for ${language.displayName}:**
+- ${language.version}
 
 Once you've accessed the documentation in your browser, you can use the \`search_specific_docs\` tool to search within it.
 
@@ -113,4 +113,32 @@ export function toLanguageNotFoundError(
 Available languages: ${availableNames}${moreCount}
 
 Please check the language name and try again.`);
+}
+
+// JSON response converter for available languages list
+export function toAvailableLanguagesJsonResponse(
+  availableLanguages: LanguageInfo[]
+): McpToolResponse {
+  // Create slug list for instruction
+  const slugList = availableLanguages.map(lang => lang.slug).join(', ');
+
+  const jsonResponse = {
+    type: 'available_languages',
+    count: availableLanguages.length,
+    total: availableLanguages.length,
+    languages: availableLanguages.map(lang => ({
+      name: lang.name,
+      displayName: lang.displayName,
+      slug: lang.slug,
+      version: lang.version
+    })),
+    instruction: `Use these slug names for search_specific_docs: ${slugList}`
+  };
+
+  return {
+    content: [{
+      type: 'text',
+      text: JSON.stringify(jsonResponse, null, 2)
+    }]
+  };
 }

@@ -65,37 +65,27 @@ export class HttpDevDocsRepository implements DevDocsRepository {
    * Parse languages from DevDocs API response
    */
   private parseLanguagesFromAPI(apiData: Record<string, any>): DocumentLanguage[] {
-    const languages: Map<string, DocumentLanguage> = new Map();
+    const languages: DocumentLanguage[] = [];
 
     for (const key in apiData) {
       const item = apiData[key];
       const name = item.slug;
       const displayName = item.name;
-      const version = item.version || 'latest';
+      const versionValue = item.version || 'latest';
       const slug = item.slug;
       const type = item.type;
       const alias = item.alias || '';
 
-      if (!languages.has(name)) {
-        languages.set(name, {
-          name,
-          displayName,
-          versions: [],
-          slug,
-          type,
-          alias
-        });
-      }
-
-      const lang = languages.get(name)!;
-      lang.versions.push({
-        version,
-        isDefault: !version || version === 'latest',
-        downloadStatus: 'available',
-        path: `${this.baseUrl}/docs/${name}`
+      languages.push({
+        name,
+        displayName,
+        version: versionValue,
+        slug,
+        type,
+        alias
       });
     }
 
-    return Array.from(languages.values());
+    return languages;
   }
 }

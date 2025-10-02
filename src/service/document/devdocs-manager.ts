@@ -1,6 +1,4 @@
-import {
-  DocumentLanguage,
-} from '../../domain/types';
+import {OrderRule} from '../../domain/types';
 import { Logger } from '../../utils/logger';
 import {ServerConfig} from "../../utils/config";
 import {Slug} from "../../domain/values/Slug.js";
@@ -11,6 +9,8 @@ import {Version} from "../../domain/values/Version.js";
 import {DevDocsRepository} from "../../domain/repository/devdocs-repository";
 import {HttpDevDocsRepository} from "../../infrastructure/devdocs-repository-impl.js";
 import {SearchHits} from "../../domain/SearchHits";
+import {DocumentLanguageCollection} from "../../domain/values/DocumentLanguageCollection.js";
+import {FuzeFuzzySearchStrategy} from "../../domain/FuzzySearchStrategy.js";
 
 export class DevDocsManager {
   private config: ServerConfig;
@@ -26,87 +26,41 @@ export class DevDocsManager {
   }
 
   /**
-   * Resolve a language input (which may be an alias/display name/etc.) to the best matching
-   * DocumentLanguage and version. If version is not provided, try to infer from input and
-   * otherwise fall back to the default version.
+   * Resolve a language input using DocumentLanguageCollection
+   * Returns the top 20 sorted candidates with fluent interface
    */
-  async resolveLanguage(language: Language, version?: Version): Promise<{ language: DocumentLanguage; version?: string; langSlug: string; }> {
-    const inputLower = language.toLowerCase();
-    const inferredVersion = version?.toString();
-
+  async getAvailableList(language: Language, version?: Version): Promise<DocumentLanguageCollection> {
     const availableLanguages = await this.devDocsRepository.fetchAvailableLanguages();
     if (!availableLanguages || availableLanguages.length === 0) {
       throw new Error('No available languages found from DevDocs');
     }
 
-    function scoreLanguage(lang: DocumentLanguage): number {
-      // Fields to compare against
-      const name = lang.name || '';
-      const displayName = lang.displayName || '';
-      const slug = lang.slug || '';
-      const type = lang.type || '';
-      const alias = lang.alias || '';
+    // Create collection and perform fluent search
+    const collection = DocumentLanguageCollection.from(availableLanguages);
 
-      // Exact matches get highest score
-      if (name.toLowerCase() === inputLower) return 100;
-      if (displayName.toLowerCase() === inputLower) return 95;
-      if (slug.toLowerCase() === inputLower) return 90;
-      if (alias.toLowerCase() === inputLower) return 85;
+    const rules: OrderRule[] = [
+      { key: 'name', direction: 'asc', matcher: new ExactMatcher() },
+      { key: 'type', direction: 'asc', matcher: new ExactMatcher() },
+      { key: 'alias', direction: 'asc', matcher: new ExactMatcher() },
+      { key: 'name', direction: 'asc', matcher: new PartialMatcher() },
+      { key: 'type', direction: 'asc', matcher: new PartialMatcher() },
+      { key: 'alias', direction: 'asc', matcher: new PartialMatcher() },
+      { key: 'version', direction: 'desc', matcher: new ExactMatcher() },
+      { key: 'version', direction: 'desc', matcher: new PartialMatcher() },
+    ]
+    let searchResult = collection.orderByRules(rules);
 
-      // Partial matches
-      if (name.toLowerCase().includes(inputLower)) return 70;
-      if (displayName.toLowerCase().includes(inputLower)) return 65;
-      if (slug.toLowerCase().includes(inputLower)) return 60;
-      if (type.toLowerCase().includes(inputLower)) return 50;
-
-      // No match
-      return 0;
+    // If no priority matches, fall back to fuzzy search
+    if (searchResult.isEmpty()) {
+      const fuzzySearchStrategy = new FuzeFuzzySearchStrategy();
+      searchResult = collection.findByFuzzySearch(language, fuzzySearchStrategy);
     }
 
-    // Find best matching language
-    const scoredLanguages = availableLanguages.map(lang => ({
-      language: lang,
-      score: scoreLanguage(lang)
-    })).filter(item => item.score > 0);
-
-    if (scoredLanguages.length === 0) {
+    if (searchResult.isEmpty()) {
       throw new Error(`No matching language found for input: "${language.toString()}"`);
     }
 
-    // Sort by score (highest first)
-    scoredLanguages.sort((a, b) => b.score - a.score);
-    const selected = scoredLanguages[0].language;
-
-    // Find best matching version
-    let chosenVersion: string | undefined = undefined;
-    if (inferredVersion) {
-      // Try to find exact version match
-      const exactMatch = selected.versions.find(v => v.version === inferredVersion);
-      if (exactMatch) {
-        chosenVersion = exactMatch.version;
-      } else {
-        // Try to find partial version match
-        const partialMatch = selected.versions.find(v => v.version.includes(inferredVersion));
-        if (partialMatch) {
-          chosenVersion = partialMatch.version;
-        }
-      }
-    }
-
-    // If no version found, use default
-    if (!chosenVersion) {
-      const defaultVersion = selected.versions.find(v => v.isDefault);
-      chosenVersion = defaultVersion?.version;
-    }
-
-    const versionStrings = selected.versions.map(v => v.version);
-    this.logger.info('document-manager', `resolveLanguage: input="${language.toString()}" version="${version?.toString() || ''}"`);
-    this.logger.info('document-manager', `resolveLanguage: candidates=[${scoredLanguages.map(s => `${s.language.name}:${s.score}`).join(',')}]`);
-    this.logger.info('document-manager', `resolveLanguage: selected name=${selected.name} display=${selected.displayName} slug=${selected.slug}`);
-    this.logger.info('document-manager', `resolveLanguage: chosenVersion="${chosenVersion || ''}" versions=[${versionStrings.join(',')}]`);
-    this.logger.info('document-manager', `resolveLanguage: langSlug=${selected.slug}`);
-
-    return { language: selected, version: chosenVersion, langSlug: selected.slug };
+    return  searchResult.take(20);
   }
 
 
