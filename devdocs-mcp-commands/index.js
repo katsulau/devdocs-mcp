@@ -28,7 +28,20 @@ const messages = {
     readmeLink: '   https://github.com/katsulau/devdocs-mcp?tab=readme-ov-file#45-setup-slash-commands-recommended',
     errorCursor: '❌ Error initializing Cursor commands:',
     errorClaude: '❌ Error initializing Claude commands:',
-    invalidPreset: 'Invalid preset. Use "cursor" or "claude".'
+    invalidPreset: 'Invalid preset. Use "cursor" or "claude".',
+    // Markdown templates
+    searchTemplate: `# DevDocs Search
+
+* Use view_available_docs to return a list of target languages based on user input keywords.
+* Present links in a clickable format based on slugs.
+* Guide users to open localhost links and press "Enable" for the language they want to use.
+`,
+    docTemplate: (title, slug) => `# ${title} Documentation
+
+* Use search_specific_docs with slug="${slug}" to search and respond based on the content.
+
+* Present implementation methods with clickable links to referenced sections.
+`
   },
   ja: {
     initializingCursor: '🚀 Cursorスラッシュコマンドを初期化中...',
@@ -47,7 +60,20 @@ const messages = {
     readmeLink: '   https://github.com/katsulau/devdocs-mcp?tab=readme-ov-file#45-setup-slash-commands-recommended',
     errorCursor: '❌ Cursorコマンドの初期化エラー:',
     errorClaude: '❌ Claudeコマンドの初期化エラー:',
-    invalidPreset: '無効なプリセットです。"cursor"または"claude"を使用してください。'
+    invalidPreset: '無効なプリセットです。"cursor"または"claude"を使用してください。',
+    // Markdown templates
+    searchTemplate: `# DevDocs 検索
+
+* ユーザーの入力キーワードに基づいて対象言語のリストを返すためにview_available_docsを使用してください。
+* スラッグに基づいてクリック可能な形式でリンクを提示してください。
+* ユーザーがlocalhostリンクを開き、使用したい言語の「Enable」を押すように案内してください。
+`,
+    docTemplate: (title, slug) => `# ${title} ドキュメント
+
+* コンテンツに基づいて検索し、レスポンスするためにsearch_specific_docs with slug="${slug}"を使用してください。
+
+* 参照セクションへのクリック可能なリンクで実装方法を提示してください。
+`
   }
 };
 
@@ -103,291 +129,131 @@ async function initCursorCommands(lang = 'en') {
     const cursorCommands = [
       {
         name: 'search.md',
-        content: `# DevDocs Search
-
-* Use view_available_docs to return a list of target languages based on user input keywords.
-* Present links in a clickable format based on slugs.
-* Guide users to open localhost links and press "Enable" for the language they want to use.
-`
+        content: messages[lang].searchTemplate
       },
       {
         name: 'typescript.md',
-        content: `# TypeScript Documentation
-
-* Use search_specific_docs with slug="typescript" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('TypeScript', 'typescript')
       },
       {
         name: 'javascript.md',
-        content: `# JavaScript Documentation
-
-* Use search_specific_docs with slug="javascript" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('JavaScript', 'javascript')
       },
       {
         name: 'python-3.12.md',
-        content: `# Python 3.12 Documentation
-
-* Use search_specific_docs with slug="python~3.12" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Python 3.12', 'python~3.12')
       },
       {
         name: 'openjdk-21.md',
-        content: `# OpenJDK 21 Documentation
-
-* Use search_specific_docs with slug="openjdk~21" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('OpenJDK 21', 'openjdk~21')
       },
       {
         name: 'postgresql-17.md',
-        content: `# PostgreSQL 17 Documentation
-
-* Use search_specific_docs with slug="postgresql~17" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('PostgreSQL 17', 'postgresql~17')
       },
       {
         name: 'mysql.md',
-        content: `# MySQL Documentation
-
-* Use search_specific_docs with slug="mysql" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('MySQL', 'mysql')
       },
       {
         name: 'sqlite.md',
-        content: `# SQLite Documentation
-
-* Use search_specific_docs with slug="sqlite" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('SQLite', 'sqlite')
       },
       {
         name: 'redis.md',
-        content: `# Redis Documentation
-
-* Use search_specific_docs with slug="redis" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Redis', 'redis')
       },
       {
         name: 'mongodb.md',
-        content: `# MongoDB Documentation
-
-* Use search_specific_docs with slug="mongodb" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('MongoDB', 'mongodb')
       },
       {
         name: 'git.md',
-        content: `# Git Documentation
-
-* Use search_specific_docs with slug="git" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Git', 'git')
       },
       {
         name: 'docker-19.md',
-        content: `# Docker 19 Documentation
-
-* Use search_specific_docs with slug="docker~19" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Docker 19', 'docker~19')
       },
       {
         name: 'kubernetes-1.28.md',
-        content: `# Kubernetes 1.28 Documentation
-
-* Use search_specific_docs with slug="kubernetes~1.28" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Kubernetes 1.28', 'kubernetes~1.28')
       },
       {
         name: 'terraform.md',
-        content: `# Terraform Documentation
-
-* Use search_specific_docs with slug="terraform" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Terraform', 'terraform')
       },
       {
         name: 'ansible-2.11.md',
-        content: `# Ansible 2.11 Documentation
-
-* Use search_specific_docs with slug="ansible~2.11" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Ansible 2.11', 'ansible~2.11')
       },
       {
         name: 'django-5.2.md',
-        content: `# Django 5.2 Documentation
-
-* Use search_specific_docs with slug="django~5.2" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Django 5.2', 'django~5.2')
       },
       {
         name: 'flask.md',
-        content: `# Flask Documentation
-
-* Use search_specific_docs with slug="flask" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Flask', 'flask')
       },
       {
         name: 'fastapi.md',
-        content: `# FastAPI Documentation
-
-* Use search_specific_docs with slug="fastapi" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('FastAPI', 'fastapi')
       },
       {
         name: 'spring-boot.md',
-        content: `# Spring Boot Documentation
-
-* Use search_specific_docs with slug="spring_boot" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Spring Boot', 'spring_boot')
       },
       {
         name: 'php.md',
-        content: `# PHP Documentation
-
-* Use search_specific_docs with slug="php" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('PHP', 'php')
       },
       {
         name: 'laravel-11.md',
-        content: `# Laravel 11 Documentation
-
-* Use search_specific_docs with slug="laravel~11" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Laravel 11', 'laravel~11')
       },
       {
         name: 'ruby-3.4.md',
-        content: `# Ruby 3.4 Documentation
-
-* Use search_specific_docs with slug="ruby~3.4" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Ruby 3.4', 'ruby~3.4')
       },
       {
         name: 'rails-8.0.md',
-        content: `# Ruby on Rails 8.0 Documentation
-
-* Use search_specific_docs with slug="rails~8.0" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Ruby on Rails 8.0', 'rails~8.0')
       },
       {
         name: 'go.md',
-        content: `# Go Documentation
-
-* Use search_specific_docs with slug="go" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Go', 'go')
       },
       {
         name: 'rust.md',
-        content: `# Rust Documentation
-
-* Use search_specific_docs with slug="rust" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Rust', 'rust')
       },
       {
         name: 'cpp.md',
-        content: `# C++ Documentation
-
-* Use search_specific_docs with slug="cpp" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('C++', 'cpp')
       },
       {
         name: 'csharp.md',
-        content: `# C# Documentation
-
-* Use search_specific_docs with slug="csharp" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('C#', 'csharp')
       },
       {
         name: 'kotlin-1.9.md',
-        content: `# Kotlin 1.9 Documentation
-
-* Use search_specific_docs with slug="kotlin~1.9" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Kotlin 1.9', 'kotlin~1.9')
       },
       {
         name: 'swift.md',
-        content: `# Swift Documentation
-
-* Use search_specific_docs with slug="swift" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Swift', 'swift')
       },
       {
         name: 'scala-3.2.md',
-        content: `# Scala 3.2 Documentation
-
-* Use search_specific_docs with slug="scala~3.2" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Scala 3.2', 'scala~3.2')
       },
       {
         name: 'express-4.md',
-        content: `# Express 4 Documentation
-
-* Use search_specific_docs with slug="express~4" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Express 4', 'express~4')
       },
       {
         name: 'koa-2.md',
-        content: `# Koa 2 Documentation
-
-* Use search_specific_docs with slug="koa~2" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Koa 2', 'koa~2')
       },
     ];
     
@@ -446,273 +312,123 @@ async function initClaudeCommands(lang = 'en') {
       },
       {
         name: 'javascript.md',
-        content: `# JavaScript Documentation
-
-* Use search_specific_docs with slug="javascript" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('JavaScript', 'javascript')
       },
       {
         name: 'python-3.12.md',
-        content: `# Python 3.12 Documentation
-
-* Use search_specific_docs with slug="python~3.12" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Python 3.12', 'python~3.12')
       },
       {
         name: 'openjdk-21.md',
-        content: `# OpenJDK 21 Documentation
-
-* Use search_specific_docs with slug="openjdk~21" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('OpenJDK 21', 'openjdk~21')
       },
       {
         name: 'postgresql-17.md',
-        content: `# PostgreSQL 17 Documentation
-
-* Use search_specific_docs with slug="postgresql~17" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('PostgreSQL 17', 'postgresql~17')
       },
       {
         name: 'mysql.md',
-        content: `# MySQL Documentation
-
-* Use search_specific_docs with slug="mysql" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('MySQL', 'mysql')
       },
       {
         name: 'sqlite.md',
-        content: `# SQLite Documentation
-
-* Use search_specific_docs with slug="sqlite" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('SQLite', 'sqlite')
       },
       {
         name: 'redis.md',
-        content: `# Redis Documentation
-
-* Use search_specific_docs with slug="redis" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Redis', 'redis')
       },
       {
         name: 'mongodb.md',
-        content: `# MongoDB Documentation
-
-* Use search_specific_docs with slug="mongodb" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('MongoDB', 'mongodb')
       },
       {
         name: 'git.md',
-        content: `# Git Documentation
-
-* Use search_specific_docs with slug="git" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Git', 'git')
       },
       {
         name: 'docker-19.md',
-        content: `# Docker 19 Documentation
-
-* Use search_specific_docs with slug="docker~19" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Docker 19', 'docker~19')
       },
       {
         name: 'kubernetes-1.28.md',
-        content: `# Kubernetes 1.28 Documentation
-
-* Use search_specific_docs with slug="kubernetes~1.28" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Kubernetes 1.28', 'kubernetes~1.28')
       },
       {
         name: 'terraform.md',
-        content: `# Terraform Documentation
-
-* Use search_specific_docs with slug="terraform" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Terraform', 'terraform')
       },
       {
         name: 'ansible-2.11.md',
-        content: `# Ansible 2.11 Documentation
-
-* Use search_specific_docs with slug="ansible~2.11" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Ansible 2.11', 'ansible~2.11')
       },
       {
         name: 'django-5.2.md',
-        content: `# Django 5.2 Documentation
-
-* Use search_specific_docs with slug="django~5.2" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Django 5.2', 'django~5.2')
       },
       {
         name: 'flask.md',
-        content: `# Flask Documentation
-
-* Use search_specific_docs with slug="flask" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Flask', 'flask')
       },
       {
         name: 'fastapi.md',
-        content: `# FastAPI Documentation
-
-* Use search_specific_docs with slug="fastapi" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('FastAPI', 'fastapi')
       },
       {
         name: 'spring-boot.md',
-        content: `# Spring Boot Documentation
-
-* Use search_specific_docs with slug="spring_boot" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Spring Boot', 'spring_boot')
       },
       {
         name: 'php.md',
-        content: `# PHP Documentation
-
-* Use search_specific_docs with slug="php" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('PHP', 'php')
       },
       {
         name: 'laravel-11.md',
-        content: `# Laravel 11 Documentation
-
-* Use search_specific_docs with slug="laravel~11" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Laravel 11', 'laravel~11')
       },
       {
         name: 'ruby-3.4.md',
-        content: `# Ruby 3.4 Documentation
-
-* Use search_specific_docs with slug="ruby~3.4" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Ruby 3.4', 'ruby~3.4')
       },
       {
         name: 'rails-8.0.md',
-        content: `# Ruby on Rails 8.0 Documentation
-
-* Use search_specific_docs with slug="rails~8.0" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Ruby on Rails 8.0', 'rails~8.0')
       },
       {
         name: 'go.md',
-        content: `# Go Documentation
-
-* Use search_specific_docs with slug="go" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Go', 'go')
       },
       {
         name: 'rust.md',
-        content: `# Rust Documentation
-
-* Use search_specific_docs with slug="rust" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Rust', 'rust')
       },
       {
         name: 'cpp.md',
-        content: `# C++ Documentation
-
-* Use search_specific_docs with slug="cpp" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('C++', 'cpp')
       },
       {
         name: 'csharp.md',
-        content: `# C# Documentation
-
-* Use search_specific_docs with slug="csharp" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('C#', 'csharp')
       },
       {
         name: 'kotlin-1.9.md',
-        content: `# Kotlin 1.9 Documentation
-
-* Use search_specific_docs with slug="kotlin~1.9" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Kotlin 1.9', 'kotlin~1.9')
       },
       {
         name: 'swift.md',
-        content: `# Swift Documentation
-
-* Use search_specific_docs with slug="swift" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Swift', 'swift')
       },
       {
         name: 'scala-3.2.md',
-        content: `# Scala 3.2 Documentation
-
-* Use search_specific_docs with slug="scala~3.2" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Scala 3.2', 'scala~3.2')
       },
       {
         name: 'express-4.md',
-        content: `# Express 4 Documentation
-
-* Use search_specific_docs with slug="express~4" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Express 4', 'express~4')
       },
       {
         name: 'koa-2.md',
-        content: `# Koa 2 Documentation
-
-* Use search_specific_docs with slug="koa~2" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('Koa 2', 'koa~2')
       },
     ];
     
