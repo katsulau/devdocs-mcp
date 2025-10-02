@@ -1,3 +1,5 @@
+import {ValidationError} from "../error/ValidationError.js";
+
 export class Slug {
   private readonly value: string;
 
@@ -7,9 +9,9 @@ export class Slug {
 
   static create(input: string): Slug {
     const v = (input || '').trim();
-    if (!v) throw new Error('Slug must not be empty');
+    if (!v) throw new ValidationError('Slug must not be empty');
     if (!/^[a-z0-9~._-]+$/i.test(v)) {
-      throw new Error('Slug has invalid characters');
+      throw new ValidationError('Slug has invalid characters');
     }
     return new Slug(v);
   }

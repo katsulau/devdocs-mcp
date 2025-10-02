@@ -15,4 +15,4 @@ docker compose rm -sf mcp-server >/dev/null 2>&1 || true
 
 # ログHTTPサーバ公開は不要のため、サービスポート公開をやめる
 exec docker compose run --rm -T \
-  --name devdocs-mcp-stdin mcp-server
+  --name devdocs-mcp mcp-server

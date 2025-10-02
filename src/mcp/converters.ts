@@ -1,7 +1,6 @@
-import {LanguageInfo, McpToolResponse} from './types';
+import {McpToolResponse} from './types';
 import {SearchHit} from "../domain/SearchHits.js";
-import {Slug} from "../domain/values/Slug.js";
-import {Query} from "../domain/values/Query.js";
+import {DocumentLanguageCollection} from "../domain/values/DocumentLanguageCollection";
 
 export function escapeUrlForMarkdown(url: string): string {
   if (!url || url === '#') return '#';
@@ -19,17 +18,12 @@ export function escapeUrlForMarkdown(url: string): string {
   return escapedUrl;
 }
 
-export function toDisplayUrl(devdocsUrl: string): string {
-  const clean = devdocsUrl.replace('/docs/', '/');
-  return clean.replace('devdocs:9292', 'localhost:9292');
-}
-
 // Search response converter
 export function toSearchResponse(
   results: SearchHit[],
   options: {
-    query: Query;
-    slug: Slug;
+    query: string;
+    slug: string;
   }
 ): McpToolResponse {
 
@@ -53,40 +47,6 @@ export function toSearchResponse(
   };
 }
 
-// Availability guide converter
-export function toAvailabilityGuide(
-  language: LanguageInfo,
-  baseUrl: string
-): McpToolResponse {
-  const devdocsUrl = baseUrl.replace('devdocs:9292', 'localhost:9292');
-  const languageUrl = `${devdocsUrl}/${language.name}`;
-  const escapedDevdocsUrl = escapeUrlForMarkdown(devdocsUrl);
-  const escapedLanguageUrl = escapeUrlForMarkdown(languageUrl);
-  const cleanLanguageUrl = escapedLanguageUrl.replace('/docs/', '/');
-
-  const guideText = `📚 **${language.displayName} Documentation Setup**
-
-Since DevDocs doesn't provide a direct download API, please follow these steps to access the documentation:
-
-1. **Open DevDocs in your browser**: [${devdocsUrl}](${escapedDevdocsUrl})
-2. **Navigate to ${language.displayName}**: [${languageUrl}](${cleanLanguageUrl})
-3. **Browse the documentation** - it will be automatically loaded when you access it
-
-**Available version for ${language.displayName}:**
-- ${language.version}
-
-Once you've accessed the documentation in your browser, you can use the \`search_specific_docs\` tool to search within it.
-
-**Note**: The documentation is cached locally in the DevDocs container, so subsequent searches will be faster.`;
-
-  return {
-    content: [{
-      type: 'text',
-      text: guideText
-    }]
-  };
-}
-
 // Error response converter
 export function toErrorResponse(message: string): McpToolResponse {
   return {
@@ -99,38 +59,35 @@ export function toErrorResponse(message: string): McpToolResponse {
 
 // Language not found error converter
 export function toLanguageNotFoundError(
-  requestedLanguage: string,
-  availableLanguages: LanguageInfo[]
+  requestedLanguage: string
 ): McpToolResponse {
-  const availableNames = availableLanguages
-    .slice(0, 10)
-    .map(lang => lang.displayName)
-    .join(', ');
-  const moreCount = availableLanguages.length > 10 ? ` and ${availableLanguages.length - 10} more...` : '';
-
   return toErrorResponse(`❌ Language "${requestedLanguage}" not found in available documentation.
-
-Available languages: ${availableNames}${moreCount}
-
-Please check the language name and try again.`);
+  Please check http://localhost:9292 to see the list of available documentation.`);
 }
 
 // JSON response converter for available languages list
 export function toAvailableLanguagesJsonResponse(
-  availableLanguages: LanguageInfo[]
+    resolvedCollection: DocumentLanguageCollection
 ): McpToolResponse {
+  const resolvedLanguages = resolvedCollection.toArray().map(lang => ({
+    name: lang.name,
+    displayName: lang.displayName,
+    slug: lang.slug,
+    version: lang.version as unknown as string
+  }));
   // Create slug list for instruction
-  const slugList = availableLanguages.map(lang => lang.slug).join(', ');
+  const slugList = resolvedLanguages.map(lang => lang.slug).join(', ');
 
   const jsonResponse = {
     type: 'available_languages',
-    count: availableLanguages.length,
-    total: availableLanguages.length,
-    languages: availableLanguages.map(lang => ({
+    count: resolvedLanguages.length,
+    total: resolvedLanguages.length,
+    languages: resolvedLanguages.map(lang => ({
       name: lang.name,
       displayName: lang.displayName,
       slug: lang.slug,
-      version: lang.version
+      version: lang.version,
+      displayUrl: `http://localhost:9292/${lang.slug}/`
     })),
     instruction: `Use these slug names for search_specific_docs: ${slugList}`
   };

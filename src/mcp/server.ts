@@ -7,18 +7,13 @@ import {
   ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import { DevDocsManager } from '../service/document/devdocs-manager.js';
+import { DevDocsManager } from '../application/document/devdocs-manager.js';
 import { DownloadDocsInput, SearchSpecificDocsInput } from './types';
 import { validateDownloadDocsInput, validateSearchSpecificDocsInput } from './validators.js';
-import { toSearchResponse, toAvailabilityGuide, toErrorResponse, toLanguageNotFoundError, toAvailableLanguagesJsonResponse } from './converters.js';
+import { toSearchResponse, toErrorResponse, toLanguageNotFoundError, toAvailableLanguagesJsonResponse } from './converters.js';
 import { Logger } from '../utils/logger.js';
 import {ServerConfig} from "../utils/config";
-import {Slug} from "../domain/values/Slug.js";
-import {Query} from "../domain/values/Query.js";
-import {Limit} from "../domain/values/Limit.js";
-import {ValidatedLanguageVersionInput} from "./input/ValidatedLanguageVersionInput.js";
-import {Language} from "../domain/values/Language.js";
-import {Version} from "../domain/values/Version.js";
+import { BadRequestError, NotFoundError } from "../application/error/AppError.js";
 
 export class DevDocsMCPServer {
   private server: Server;
@@ -165,18 +160,17 @@ export class DevDocsMCPServer {
 
   private async handleSearchSpecificDocs(input: SearchSpecificDocsInput) {
     try {
-
-      const slug = Slug.create(input.slug);
-      const query = Query.create(input.query);
-      const limit = Limit.create(input.limit);
       this.logger.info('mcp-server', `Searching by slug: ${input.slug} for query: ${input.query}`);
-      const searchResults = await this.devDocsManager.searchDocumentationBySlug(slug, query, limit);
+      const searchResults = await this.devDocsManager.searchDocumentationBySlug(input.slug, input.query, input.limit);
       return toSearchResponse(searchResults.searchHits, {
-        query: query,
-        slug: slug
+        query: input.slug,
+        slug: input.query
       });
     } catch (error) {
       this.logger.error('mcp-server', `Search by slug failed: ${error}`);
+      if (error instanceof BadRequestError) {
+        return toErrorResponse(`input parameter error: ${error}`);
+      }
       return toErrorResponse(`Search by slug failed: ${error}`);
     }
   }
@@ -184,41 +178,14 @@ export class DevDocsMCPServer {
   private async handleDownloadDocs(input: DownloadDocsInput) {
     try {
       this.logger.info('mcp-server', `Checking docs availability for: ${input.language}${input.version ? ` v${input.version}` : ''}`);
-      
-      // If no specific language is requested, return all available languages in JSON format
-      if (!input.language || input.language.trim() === '') {
-        const availableLanguages = await this.devDocsManager.devDocsRepository.fetchAvailableLanguages();
-        const infos = availableLanguages.map(l => ({
-          name: l.name,
-          displayName: l.displayName,
-          slug: l.slug,
-          version: l.version as unknown as string
-        }));
-        return toAvailableLanguagesJsonResponse(infos);
+      const resolvedCollection = await this.devDocsManager.getAvailableList();
+      return toAvailableLanguagesJsonResponse(resolvedCollection);
+    }  catch (e) {
+      if (e instanceof NotFoundError) {
+        return toLanguageNotFoundError(input.language);
+      } else {
+        return toErrorResponse(`Failed to check docs availability: ${e}`);
       }
-      
-      // Create ValidatedLanguageVersionInput and convert to domain objects
-      const validatedInput = ValidatedLanguageVersionInput.create(input.language, input.version);
-      const language = new Language(validatedInput.language);
-      const version = validatedInput.version ? new Version(validatedInput.version) : undefined;
-      
-      const resolvedCollection = await this.devDocsManager.getAvailableList(language, version);
-      if (resolvedCollection.isEmpty()) {
-        throw new Error('No matching language found');
-      }
-
-      // Convert DocumentLanguageCollection to LanguageInfo array
-      const resolvedLanguages = resolvedCollection.toArray().map(lang => ({
-        name: lang.name,
-        displayName: lang.displayName,
-        slug: lang.slug,
-        version: lang.version as unknown as string
-      }));
-
-      return toAvailableLanguagesJsonResponse(resolvedLanguages);
-    } catch (e) {
-      const availableLanguages = await this.devDocsManager.devDocsRepository.fetchAvailableLanguages();
-      return toLanguageNotFoundError(input.language, availableLanguages);
     }
   }
 

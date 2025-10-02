@@ -1,3 +1,5 @@
+import {ValidationError} from "../error/ValidationError.js";
+
 export class Query {
   private readonly value: string;
 
@@ -7,7 +9,7 @@ export class Query {
 
   static create(input: string): Query {
     const v = (input || '').trim();
-    if (!v) throw new Error('Query must not be empty');
+    if (!v) throw new ValidationError('Query must not be empty');
     return new Query(v);
   }
 
