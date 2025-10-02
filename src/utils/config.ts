@@ -1,15 +1,9 @@
 export interface ServerConfig {
   storage: {
     documentsPath: string;
-    indexPath: string;
-    cachePath: string;
   };
   devdocs: {
     baseUrl: string;
-  };
-  search: {
-    maxResults: number;
-    snippetLength: number;
   };
   logging: {
     level: 'debug' | 'info' | 'warn' | 'error';
@@ -20,15 +14,9 @@ export interface ServerConfig {
 const DEFAULT_CONFIG: ServerConfig = {
   storage: {
     documentsPath: '/app/data/documents',
-    indexPath: '/app/data/index',
-    cachePath: '/app/data/cache'
   },
   devdocs: {
     baseUrl: 'https://devdocs.io'
-  },
-  search: {
-    maxResults: 50,
-    snippetLength: 200
   },
   logging: {
     level: 'info',
@@ -40,16 +28,10 @@ const DEFAULT_CONFIG: ServerConfig = {
 export function loadConfig(): ServerConfig {
   return {
     storage: {
-      documentsPath: process.env.DOCUMENTS_PATH || DEFAULT_CONFIG.storage.documentsPath,
-      indexPath: process.env.INDEX_PATH || DEFAULT_CONFIG.storage.indexPath,
-      cachePath: process.env.CACHE_PATH || DEFAULT_CONFIG.storage.cachePath
+      documentsPath: process.env.DOCUMENTS_PATH || DEFAULT_CONFIG.storage.documentsPath
     },
     devdocs: {
       baseUrl: process.env.DEVDOCS_BASE_URL || DEFAULT_CONFIG.devdocs.baseUrl
-    },
-    search: {
-      maxResults: parseInt(process.env.MAX_RESULTS || '50', 10),
-      snippetLength: parseInt(process.env.SNIPPET_LENGTH || '200', 10)
     },
     logging: {
       level: (process.env.LOG_LEVEL as any) || DEFAULT_CONFIG.logging.level,

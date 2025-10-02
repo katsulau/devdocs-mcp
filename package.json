@@ -29,8 +29,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "dotenv": "^17.2.2",
-    "fuse.js": "^7.1.0"
+    "dotenv": "^17.2.2"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
