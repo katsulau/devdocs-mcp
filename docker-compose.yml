@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   devdocs:
     image: ghcr.io/freecodecamp/devdocs:latest
