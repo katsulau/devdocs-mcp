@@ -1,6 +1,6 @@
 # DevDocs Reference MCP
 
-An MCP (Model Context Protocol) server that provides fast, offline access to DevDocs documentation for AI editors like Claude and Cursor.
+An MCP (Model Context Protocol) server that provides offline access to DevDocs documentation for AI editors like Claude and Cursor.
 
 ## Features
 
