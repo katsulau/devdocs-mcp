@@ -1,4 +1,4 @@
-# DevDocs Reference MCP
+# DevDocs MCP
 
 An MCP (Model Context Protocol) server that provides offline access to DevDocs documentation for AI editors like Claude and Cursor.
 
@@ -19,8 +19,8 @@ An MCP (Model Context Protocol) server that provides offline access to DevDocs d
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/katsulau/devdocs-reference-mcp.git
-cd devdocs-reference-mcp
+git clone https://github.com/katsulau/devdocs-mcp.git
+cd devdocs-mcp
 ```
 
 ### 2. Start the Services
@@ -41,36 +41,58 @@ docker-compose ps
 
 Add the MCP server configuration to your AI editor. Here are examples for popular editors:
 
-#### Claude Desktop
+#### Claude Code
 
-Add to `~/.claude/claude_desktop_config.json`:
+**Note**: Replace `/path/to/your/devdocs-mcp/` with the actual path where you cloned this repository.
 
-**Note**: Replace `/path/to/your/devdocs-reference-mcp/` with the actual path where you cloned this repository.
-```json
-{
-  "mcpServers": {
-    "devdocs-mcp": {
-      "command": "/path/to/your/devdocs-reference-mcp/mcp-run.sh",
-      "args": [],
-      "env": {
-        "DEVDOCS_BASE_URL": "http://devdocs:9292",
-        "LOG_LEVEL": "info",
-        "LOG_FORMAT": "json"
-      }
-    }
-  }
-}
+###### Available only in the current project
+```bash
+
+# Add the MCP server to Claude
+claude mcp add devdocs-mcp \
+  --env DEVDOCS_BASE_URL=http://devdocs:9292 \
+  --env LOG_LEVEL=info \
+  --env LOG_FORMAT=json \
+  --scope local /path/to/your/devdocs-mcp//mcp-run.sh
+
+# Verify the MCP server is added
+claude mcp list
+
+# (within Claude Code) Check server status
+/mcp
+
 ```
+
+###### Available in all projects
+```bash
+
+# Add the MCP server to Claude
+claude mcp add devdocs-mcp \
+  --env DEVDOCS_BASE_URL=http://devdocs:9292 \
+  --env LOG_LEVEL=info \
+  --env LOG_FORMAT=json \
+  --scope user /path/to/your/devdocs-mcp//mcp-run.sh
+
+# Verify the MCP server is added
+claude mcp list
+
+# (within Claude Code) Check server status
+/mcp
+
+```
+For more details, refer to the official documentation:
+https://docs.claude.com/en/docs/claude-code/mcp#managing-your-servers
+
 #### Cursor
 
 Add to your Cursor MCP configuration:
 
-**Note**: Replace `/path/to/your/devdocs-reference-mcp/` with the actual path where you cloned this repository.
+**Note**: Replace `/path/to/your/devdocs-mcp/` with the actual path where you cloned this repository.
 ```json
 {
   "mcpServers": {
     "devdocs-mcp": {
-      "command": "/path/to/your/devdocs-reference-mcp/mcp-run.sh",
+      "command": "/path/to/your/devdocs-mcp/mcp-run.sh",
       "args": [],
       "env": {
         "DEVDOCS_BASE_URL": "http://devdocs:9292",
@@ -275,7 +297,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Support
 
-- [GitHub Issues](https://github.com/katsulau/devdocs-reference-mcp/issues)
+- [GitHub Issues](https://github.com/katsulau/devdocs-mcp/issues)
 
 ## Acknowledgments
 
