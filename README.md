@@ -240,20 +240,8 @@ src/
 
 The MCP server provides two main tools:
 
-1. **`view_available_docs`**: List all available documentation languages
+1. **`view_available_docs`**: List available documentation languages
 2. **`search_specific_docs`**: Search within specific documentation
-
-### Example Queries
-
-```bash
-# List available languages
-"Show me all available programming languages"
-
-# Search specific documentation
-"Search for 'useState' in React documentation"
-"Find information about 'async/await' in JavaScript"
-"Look up 'list comprehensions' in Python 3.11"
-```
 
 ## Troubleshooting
 
