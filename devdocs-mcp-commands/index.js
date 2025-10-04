@@ -259,6 +259,290 @@ async function initCursorCommands(lang = 'en') {
         name: 'bash.md',
         content: messages[lang].docTemplate('Bash', 'bash')
       },
+      // Additional languages and frameworks
+      {
+        name: 'angular.md',
+        content: messages[lang].docTemplate('Angular', 'angular')
+      },
+      {
+        name: 'angularjs-1.8.md',
+        content: messages[lang].docTemplate('Angular.js 1.8', 'angularjs~1.8')
+      },
+      {
+        name: 'c.md',
+        content: messages[lang].docTemplate('C', 'c')
+      },
+      {
+        name: 'crystal.md',
+        content: messages[lang].docTemplate('Crystal', 'crystal')
+      },
+      {
+        name: 'd.md',
+        content: messages[lang].docTemplate('D', 'd')
+      },
+      {
+        name: 'dart-2.md',
+        content: messages[lang].docTemplate('Dart 2', 'dart~2')
+      },
+      {
+        name: 'elixir-1.18.md',
+        content: messages[lang].docTemplate('Elixir 1.18', 'elixir~1.18')
+      },
+      {
+        name: 'erlang-26.md',
+        content: messages[lang].docTemplate('Erlang 26', 'erlang~26')
+      },
+      {
+        name: 'haskell-9.md',
+        content: messages[lang].docTemplate('Haskell 9', 'haskell~9')
+      },
+      {
+        name: 'haxe.md',
+        content: messages[lang].docTemplate('Haxe', 'haxe')
+      },
+      {
+        name: 'julia-1.11.md',
+        content: messages[lang].docTemplate('Julia 1.11', 'julia~1.11')
+      },
+      {
+        name: 'lua-5.4.md',
+        content: messages[lang].docTemplate('Lua 5.4', 'lua~5.4')
+      },
+      {
+        name: 'nim.md',
+        content: messages[lang].docTemplate('Nim', 'nim')
+      },
+      {
+        name: 'ocaml.md',
+        content: messages[lang].docTemplate('OCaml', 'ocaml')
+      },
+      {
+        name: 'perl-5.42.md',
+        content: messages[lang].docTemplate('Perl 5.42', 'perl~5.42')
+      },
+      {
+        name: 'python-3.14.md',
+        content: messages[lang].docTemplate('Python 3.14', 'python~3.14')
+      },
+      {
+        name: 'r.md',
+        content: messages[lang].docTemplate('R', 'r')
+      },
+      {
+        name: 'zig.md',
+        content: messages[lang].docTemplate('Zig', 'zig')
+      },
+      {
+        name: 'zsh.md',
+        content: messages[lang].docTemplate('Zsh', 'zsh')
+      },
+      // Frameworks and libraries
+      {
+        name: 'react.md',
+        content: messages[lang].docTemplate('React', 'react')
+      },
+      {
+        name: 'vue-3.md',
+        content: messages[lang].docTemplate('Vue 3', 'vue~3')
+      },
+      {
+        name: 'svelte.md',
+        content: messages[lang].docTemplate('Svelte', 'svelte')
+      },
+      {
+        name: 'nextjs.md',
+        content: messages[lang].docTemplate('Next.js', 'nextjs')
+      },
+      {
+        name: 'express.md',
+        content: messages[lang].docTemplate('Express', 'express')
+      },
+      {
+        name: 'koa.md',
+        content: messages[lang].docTemplate('Koa', 'koa')
+      },
+      {
+        name: 'tailwindcss.md',
+        content: messages[lang].docTemplate('Tailwind CSS', 'tailwindcss')
+      },
+      {
+        name: 'bootstrap-5.md',
+        content: messages[lang].docTemplate('Bootstrap 5', 'bootstrap~5')
+      },
+      // Databases
+      {
+        name: 'mariadb.md',
+        content: messages[lang].docTemplate('MariaDB', 'mariadb')
+      },
+      // Tools and utilities
+      {
+        name: 'docker.md',
+        content: messages[lang].docTemplate('Docker', 'docker')
+      },
+      {
+        name: 'kubernetes.md',
+        content: messages[lang].docTemplate('Kubernetes', 'kubernetes')
+      },
+      {
+        name: 'kubectl.md',
+        content: messages[lang].docTemplate('Kubectl', 'kubectl')
+      },
+      {
+        name: 'nginx.md',
+        content: messages[lang].docTemplate('nginx', 'nginx')
+      },
+      {
+        name: 'ansible.md',
+        content: messages[lang].docTemplate('Ansible', 'ansible')
+      },
+      {
+        name: 'vagrant.md',
+        content: messages[lang].docTemplate('Vagrant', 'vagrant')
+      },
+      {
+        name: 'npm.md',
+        content: messages[lang].docTemplate('npm', 'npm')
+      },
+      {
+        name: 'yarn.md',
+        content: messages[lang].docTemplate('Yarn', 'yarn')
+      },
+      {
+        name: 'webpack-5.md',
+        content: messages[lang].docTemplate('webpack 5', 'webpack~5')
+      },
+      {
+        name: 'vite.md',
+        content: messages[lang].docTemplate('Vite', 'vite')
+      },
+      {
+        name: 'esbuild.md',
+        content: messages[lang].docTemplate('esbuild', 'esbuild')
+      },
+      // System and OS
+      {
+        name: 'fish-4.0.md',
+        content: messages[lang].docTemplate('Fish 4.0', 'fish~4.0')
+      },
+      {
+        name: 'homebrew.md',
+        content: messages[lang].docTemplate('Homebrew', 'homebrew')
+      },
+      {
+        name: 'i3.md',
+        content: messages[lang].docTemplate('i3', 'i3')
+      },
+      // Web technologies
+      {
+        name: 'html.md',
+        content: messages[lang].docTemplate('HTML', 'html')
+      },
+      {
+        name: 'css.md',
+        content: messages[lang].docTemplate('CSS', 'css')
+      },
+      {
+        name: 'svg.md',
+        content: messages[lang].docTemplate('SVG', 'svg')
+      },
+      {
+        name: 'http.md',
+        content: messages[lang].docTemplate('HTTP', 'http')
+      },
+      {
+        name: 'dom.md',
+        content: messages[lang].docTemplate('Web APIs', 'dom')
+      },
+      {
+        name: 'web-extensions.md',
+        content: messages[lang].docTemplate('Web Extensions', 'web_extensions')
+      },
+      // Machine Learning and Data Science
+      {
+        name: 'tensorflow.md',
+        content: messages[lang].docTemplate('TensorFlow', 'tensorflow')
+      },
+      {
+        name: 'pytorch-2.7.md',
+        content: messages[lang].docTemplate('PyTorch 2.7', 'pytorch~2.7')
+      },
+      {
+        name: 'numpy-2.2.md',
+        content: messages[lang].docTemplate('NumPy 2.2', 'numpy~2.2')
+      },
+      {
+        name: 'pandas-2.md',
+        content: messages[lang].docTemplate('pandas 2', 'pandas~2')
+      },
+      {
+        name: 'matplotlib.md',
+        content: messages[lang].docTemplate('Matplotlib', 'matplotlib')
+      },
+      {
+        name: 'scikit-learn.md',
+        content: messages[lang].docTemplate('scikit-learn', 'scikit_learn')
+      },
+      {
+        name: 'scikit-image.md',
+        content: messages[lang].docTemplate('scikit-image', 'scikit_image')
+      },
+      // Other technologies
+      {
+        name: 'latex.md',
+        content: messages[lang].docTemplate('LaTeX', 'latex')
+      },
+      {
+        name: 'markdown.md',
+        content: messages[lang].docTemplate('Markdown', 'markdown')
+      },
+      {
+        name: 'liquid.md',
+        content: messages[lang].docTemplate('Liquid', 'liquid')
+      },
+      {
+        name: 'sass.md',
+        content: messages[lang].docTemplate('Sass', 'sass')
+      },
+      {
+        name: 'less-4.md',
+        content: messages[lang].docTemplate('Less 4', 'less~4')
+      },
+      {
+        name: 'pug.md',
+        content: messages[lang].docTemplate('Pug', 'pug')
+      },
+      {
+        name: 'handlebars.md',
+        content: messages[lang].docTemplate('Handlebars.js', 'handlebars')
+      },
+      {
+        name: 'jquery.md',
+        content: messages[lang].docTemplate('jQuery', 'jquery')
+      },
+      {
+        name: 'lodash-4.md',
+        content: messages[lang].docTemplate('lodash 4', 'lodash~4')
+      },
+      {
+        name: 'moment.md',
+        content: messages[lang].docTemplate('Moment.js', 'moment')
+      },
+      {
+        name: 'axios.md',
+        content: messages[lang].docTemplate('Axios', 'axios')
+      },
+      {
+        name: 'threejs.md',
+        content: messages[lang].docTemplate('Three.js', 'threejs')
+      },
+      {
+        name: 'phaser.md',
+        content: messages[lang].docTemplate('Phaser', 'phaser')
+      },
+      {
+        name: 'electron.md',
+        content: messages[lang].docTemplate('Electron', 'electron')
+      },
     ];
     
     for (const command of cursorCommands) {
@@ -428,6 +712,290 @@ async function initClaudeCommands(lang = 'en') {
       {
         name: 'bash.md',
         content: messages[lang].docTemplate('Bash', 'bash')
+      },
+      // Additional languages and frameworks
+      {
+        name: 'angular.md',
+        content: messages[lang].docTemplate('Angular', 'angular')
+      },
+      {
+        name: 'angularjs-1.8.md',
+        content: messages[lang].docTemplate('Angular.js 1.8', 'angularjs~1.8')
+      },
+      {
+        name: 'c.md',
+        content: messages[lang].docTemplate('C', 'c')
+      },
+      {
+        name: 'crystal.md',
+        content: messages[lang].docTemplate('Crystal', 'crystal')
+      },
+      {
+        name: 'd.md',
+        content: messages[lang].docTemplate('D', 'd')
+      },
+      {
+        name: 'dart-2.md',
+        content: messages[lang].docTemplate('Dart 2', 'dart~2')
+      },
+      {
+        name: 'elixir-1.18.md',
+        content: messages[lang].docTemplate('Elixir 1.18', 'elixir~1.18')
+      },
+      {
+        name: 'erlang-26.md',
+        content: messages[lang].docTemplate('Erlang 26', 'erlang~26')
+      },
+      {
+        name: 'haskell-9.md',
+        content: messages[lang].docTemplate('Haskell 9', 'haskell~9')
+      },
+      {
+        name: 'haxe.md',
+        content: messages[lang].docTemplate('Haxe', 'haxe')
+      },
+      {
+        name: 'julia-1.11.md',
+        content: messages[lang].docTemplate('Julia 1.11', 'julia~1.11')
+      },
+      {
+        name: 'lua-5.4.md',
+        content: messages[lang].docTemplate('Lua 5.4', 'lua~5.4')
+      },
+      {
+        name: 'nim.md',
+        content: messages[lang].docTemplate('Nim', 'nim')
+      },
+      {
+        name: 'ocaml.md',
+        content: messages[lang].docTemplate('OCaml', 'ocaml')
+      },
+      {
+        name: 'perl-5.42.md',
+        content: messages[lang].docTemplate('Perl 5.42', 'perl~5.42')
+      },
+      {
+        name: 'python-3.14.md',
+        content: messages[lang].docTemplate('Python 3.14', 'python~3.14')
+      },
+      {
+        name: 'r.md',
+        content: messages[lang].docTemplate('R', 'r')
+      },
+      {
+        name: 'zig.md',
+        content: messages[lang].docTemplate('Zig', 'zig')
+      },
+      {
+        name: 'zsh.md',
+        content: messages[lang].docTemplate('Zsh', 'zsh')
+      },
+      // Frameworks and libraries
+      {
+        name: 'react.md',
+        content: messages[lang].docTemplate('React', 'react')
+      },
+      {
+        name: 'vue-3.md',
+        content: messages[lang].docTemplate('Vue 3', 'vue~3')
+      },
+      {
+        name: 'svelte.md',
+        content: messages[lang].docTemplate('Svelte', 'svelte')
+      },
+      {
+        name: 'nextjs.md',
+        content: messages[lang].docTemplate('Next.js', 'nextjs')
+      },
+      {
+        name: 'express.md',
+        content: messages[lang].docTemplate('Express', 'express')
+      },
+      {
+        name: 'koa.md',
+        content: messages[lang].docTemplate('Koa', 'koa')
+      },
+      {
+        name: 'tailwindcss.md',
+        content: messages[lang].docTemplate('Tailwind CSS', 'tailwindcss')
+      },
+      {
+        name: 'bootstrap-5.md',
+        content: messages[lang].docTemplate('Bootstrap 5', 'bootstrap~5')
+      },
+      // Databases
+      {
+        name: 'mariadb.md',
+        content: messages[lang].docTemplate('MariaDB', 'mariadb')
+      },
+      // Tools and utilities
+      {
+        name: 'docker.md',
+        content: messages[lang].docTemplate('Docker', 'docker')
+      },
+      {
+        name: 'kubernetes.md',
+        content: messages[lang].docTemplate('Kubernetes', 'kubernetes')
+      },
+      {
+        name: 'kubectl.md',
+        content: messages[lang].docTemplate('Kubectl', 'kubectl')
+      },
+      {
+        name: 'nginx.md',
+        content: messages[lang].docTemplate('nginx', 'nginx')
+      },
+      {
+        name: 'ansible.md',
+        content: messages[lang].docTemplate('Ansible', 'ansible')
+      },
+      {
+        name: 'vagrant.md',
+        content: messages[lang].docTemplate('Vagrant', 'vagrant')
+      },
+      {
+        name: 'npm.md',
+        content: messages[lang].docTemplate('npm', 'npm')
+      },
+      {
+        name: 'yarn.md',
+        content: messages[lang].docTemplate('Yarn', 'yarn')
+      },
+      {
+        name: 'webpack-5.md',
+        content: messages[lang].docTemplate('webpack 5', 'webpack~5')
+      },
+      {
+        name: 'vite.md',
+        content: messages[lang].docTemplate('Vite', 'vite')
+      },
+      {
+        name: 'esbuild.md',
+        content: messages[lang].docTemplate('esbuild', 'esbuild')
+      },
+      // System and OS
+      {
+        name: 'fish-4.0.md',
+        content: messages[lang].docTemplate('Fish 4.0', 'fish~4.0')
+      },
+      {
+        name: 'homebrew.md',
+        content: messages[lang].docTemplate('Homebrew', 'homebrew')
+      },
+      {
+        name: 'i3.md',
+        content: messages[lang].docTemplate('i3', 'i3')
+      },
+      // Web technologies
+      {
+        name: 'html.md',
+        content: messages[lang].docTemplate('HTML', 'html')
+      },
+      {
+        name: 'css.md',
+        content: messages[lang].docTemplate('CSS', 'css')
+      },
+      {
+        name: 'svg.md',
+        content: messages[lang].docTemplate('SVG', 'svg')
+      },
+      {
+        name: 'http.md',
+        content: messages[lang].docTemplate('HTTP', 'http')
+      },
+      {
+        name: 'dom.md',
+        content: messages[lang].docTemplate('Web APIs', 'dom')
+      },
+      {
+        name: 'web-extensions.md',
+        content: messages[lang].docTemplate('Web Extensions', 'web_extensions')
+      },
+      // Machine Learning and Data Science
+      {
+        name: 'tensorflow.md',
+        content: messages[lang].docTemplate('TensorFlow', 'tensorflow')
+      },
+      {
+        name: 'pytorch-2.7.md',
+        content: messages[lang].docTemplate('PyTorch 2.7', 'pytorch~2.7')
+      },
+      {
+        name: 'numpy-2.2.md',
+        content: messages[lang].docTemplate('NumPy 2.2', 'numpy~2.2')
+      },
+      {
+        name: 'pandas-2.md',
+        content: messages[lang].docTemplate('pandas 2', 'pandas~2')
+      },
+      {
+        name: 'matplotlib.md',
+        content: messages[lang].docTemplate('Matplotlib', 'matplotlib')
+      },
+      {
+        name: 'scikit-learn.md',
+        content: messages[lang].docTemplate('scikit-learn', 'scikit_learn')
+      },
+      {
+        name: 'scikit-image.md',
+        content: messages[lang].docTemplate('scikit-image', 'scikit_image')
+      },
+      // Other technologies
+      {
+        name: 'latex.md',
+        content: messages[lang].docTemplate('LaTeX', 'latex')
+      },
+      {
+        name: 'markdown.md',
+        content: messages[lang].docTemplate('Markdown', 'markdown')
+      },
+      {
+        name: 'liquid.md',
+        content: messages[lang].docTemplate('Liquid', 'liquid')
+      },
+      {
+        name: 'sass.md',
+        content: messages[lang].docTemplate('Sass', 'sass')
+      },
+      {
+        name: 'less-4.md',
+        content: messages[lang].docTemplate('Less 4', 'less~4')
+      },
+      {
+        name: 'pug.md',
+        content: messages[lang].docTemplate('Pug', 'pug')
+      },
+      {
+        name: 'handlebars.md',
+        content: messages[lang].docTemplate('Handlebars.js', 'handlebars')
+      },
+      {
+        name: 'jquery.md',
+        content: messages[lang].docTemplate('jQuery', 'jquery')
+      },
+      {
+        name: 'lodash-4.md',
+        content: messages[lang].docTemplate('lodash 4', 'lodash~4')
+      },
+      {
+        name: 'moment.md',
+        content: messages[lang].docTemplate('Moment.js', 'moment')
+      },
+      {
+        name: 'axios.md',
+        content: messages[lang].docTemplate('Axios', 'axios')
+      },
+      {
+        name: 'threejs.md',
+        content: messages[lang].docTemplate('Three.js', 'threejs')
+      },
+      {
+        name: 'phaser.md',
+        content: messages[lang].docTemplate('Phaser', 'phaser')
+      },
+      {
+        name: 'electron.md',
+        content: messages[lang].docTemplate('Electron', 'electron')
       },
     ];
     
