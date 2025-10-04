@@ -12,7 +12,7 @@ An MCP (Model Context Protocol) server that provides offline access to DevDocs d
 
 - Docker and Docker Compose
 - Node.js 18+ (for development)
-- An MCP-compatible AI editor (Claude Desktop, Cursor, etc.)
+- An MCP-compatible AI editor (Claude Code, Cursor)
 
 ## Quick Start
 
@@ -29,10 +29,14 @@ The easiest way to get started is using Docker Compose, which will start both th
 
 ```bash
 
-cp .env.example .env
+cp .env.template .env
 # Start both DevDocs and MCP server
 docker-compose up -d
+```
 
+> **Note**: The DevDocs Docker image is large and may take 10+ minutes to build and download on first run. Please be patient during the initial setup.
+
+```
 # Check if services are running
 docker-compose ps
 ```
