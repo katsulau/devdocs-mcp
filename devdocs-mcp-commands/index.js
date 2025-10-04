@@ -31,7 +31,8 @@ const messages = {
 
 * Use view_available_docs to return a list of target languages based on user input keywords.
 * Present links in a clickable format based on slugs.
-* Guide users to open localhost links and press "Enable" for the language they want to use.
+* If the language you want to search is not available in slash commands, you can add them. See README section 4.5-setup-slash-commands for details:
+  https://github.com/katsulau/devdocs-mcp?tab=readme-ov-file#45-setup-slash-commands-recommended
 `,
     docTemplate: (title, slug) => `# ${title} Documentation
 
@@ -60,7 +61,8 @@ const messages = {
 
 * ユーザーの入力キーワードに基づいて対象言語のリストを返すためにview_available_docsを使用してください。
 * スラッグに基づいてクリック可能な形式でリンクを提示してください。
-* ユーザーがlocalhostリンクを開き、使用したい言語の「Enable」を押すように案内してください。
+* 検索したい言語がスラッシュコマンドにない場合は、追加できます。詳細はREADMEの4.5-setup-slash-commandsセクションを参照してください:
+  https://github.com/katsulau/devdocs-mcp?tab=readme-ov-file#45-setup-slash-commands-recommended
 `,
     docTemplate: (title, slug) => `# ${title} ドキュメント
 
@@ -293,21 +295,11 @@ async function initClaudeCommands(lang = 'en') {
     const claudeCommands = [
       {
         name: 'search.md',
-        content: `# DevDocs Search
-
-* Use view_available_docs to return a list of target languages based on user input keywords.
-* Present links in a clickable format based on slugs.
-* Guide users to open localhost links and press "Enable" for the language they want to use.
-`
+        content: messages[lang].searchTemplate
       },
       {
         name: 'typescript.md',
-        content: `# TypeScript Documentation
-
-* Use search_specific_docs with slug="typescript" to search and respond based on the content.
-
-* Present implementation methods with clickable links to referenced sections.
-`
+        content: messages[lang].docTemplate('TypeScript', 'typescript')
       },
       {
         name: 'javascript.md',
