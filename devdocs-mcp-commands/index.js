@@ -39,6 +39,8 @@ const messages = {
 * Use search_specific_docs with slug="${slug}" to search and respond based on the content.
 
 * Present implementation methods with clickable links to referenced sections.
+
+* Limit search_specific_docs to a maximum of 10 searches. If no results are found, perform a regular web search instead.
 `
   },
   ja: {
@@ -69,6 +71,8 @@ const messages = {
 * コンテンツに基づいて検索し、レスポンスするためにsearch_specific_docs with slug="${slug}"を使用してください。
 
 * 参照セクションへのクリック可能なリンクで実装方法を提示してください。
+
+* search_specific_docsでの検索は最大10回まででお願いします。検索結果が一件もなかった場合は、通常のweb検索を行ってください。
 `
   }
 };
