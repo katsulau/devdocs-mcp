@@ -17,14 +17,11 @@ const messages = {
     successCursor: '\n🎉 Cursor slash commands initialized successfully!',
     successClaude: '\n🎉 Claude slash commands initialized successfully!',
     nextSteps: '\nNext steps:',
-    step1: '1. Go to http://localhost:9292 and search for the language you want',
-    step1Note1: '   - If an "enabled" link appears, click it to download the documentation',
-    step1Note2: '   - If no "enabled" link appears, the documentation is already downloaded',
-    step2: '2. After enabling, you can use slash commands to search. For example:',
+    step1: '1. After MCP server setup is complete, you can use slash commands to search. For example:',
     example1: '   /devdocs/postgresql-17 How to optimize database performance?',
     example2: '   /devdocs/openjdk-21 How to implement asynchronous processing?',
     example3: '   /devdocs/python-3.12 How do list comprehensions work?',
-    step3: '3. If slash commands are not available, you can add them. See README section 4.5-setup-slash-commands for details:',
+    step2: '2. If the language you want to search is not available in slash commands, you can add them. See README section 4.5-setup-slash-commands for details:',
     readmeLink: '   https://github.com/katsulau/devdocs-mcp?tab=readme-ov-file#45-setup-slash-commands-recommended',
     errorCursor: '❌ Error initializing Cursor commands:',
     errorClaude: '❌ Error initializing Claude commands:',
@@ -49,14 +46,11 @@ const messages = {
     successCursor: '\n🎉 Cursorスラッシュコマンドの初期化が完了しました！',
     successClaude: '\n🎉 Claudeスラッシュコマンドの初期化が完了しました！',
     nextSteps: '\n次のステップ:',
-    step1: '1. http://localhost:9292 にアクセスして、必要な言語を検索してください',
-    step1Note1: '   - 「enabled」リンクが表示された場合は、クリックしてドキュメントをダウンロードしてください',
-    step1Note2: '   - 「enabled」リンクが表示されない場合は、ドキュメントは既にダウンロード済みです',
-    step2: '2. 有効化後、スラッシュコマンドで検索できます。例:',
+    step1: '1. MCPサーバーのsetupが完了後、スラッシュコマンドで検索できます。例:',
     example1: '   /devdocs/postgresql-17 データベースのパフォーマンスを最適化するには？',
     example2: '   /devdocs/openjdk-21 非同期処理を実装するには？',
     example3: '   /devdocs/python-3.12 型推論はどうやってできる？',
-    step3: '3. スラッシュコマンドが利用できない場合は、追加できます。詳細はREADMEの4.5-setup-slash-commandsセクションを参照してください:',
+    step2: '2. 検索したい言語がスラッシュコマンドにない場合は、追加できます。詳細はREADMEの4.5-setup-slash-commandsセクションを参照してください:',
     readmeLink: '   https://github.com/katsulau/devdocs-mcp?tab=readme-ov-file#45-setup-slash-commands-recommended',
     errorCursor: '❌ Cursorコマンドの初期化エラー:',
     errorClaude: '❌ Claudeコマンドの初期化エラー:',
@@ -255,6 +249,14 @@ async function initCursorCommands(lang = 'en') {
         name: 'koa-2.md',
         content: messages[lang].docTemplate('Koa 2', 'koa~2')
       },
+      {
+        name: 'man.md',
+        content: messages[lang].docTemplate('Linux Manual Pages', 'man')
+      },
+      {
+        name: 'bash.md',
+        content: messages[lang].docTemplate('Bash', 'bash')
+      },
     ];
     
     for (const command of cursorCommands) {
@@ -266,13 +268,10 @@ async function initCursorCommands(lang = 'en') {
     console.log(chalk.green(messages[lang].successCursor));
     console.log(chalk.yellow(messages[lang].nextSteps));
     console.log(messages[lang].step1);
-    console.log(messages[lang].step1Note1);
-    console.log(messages[lang].step1Note2);
-    console.log(messages[lang].step2);
     console.log(messages[lang].example1);
     console.log(messages[lang].example2);
     console.log(messages[lang].example3);
-    console.log(messages[lang].step3);
+    console.log(messages[lang].step2);
     console.log(messages[lang].readmeLink);
     
   } catch (error) {
@@ -430,6 +429,14 @@ async function initClaudeCommands(lang = 'en') {
         name: 'koa-2.md',
         content: messages[lang].docTemplate('Koa 2', 'koa~2')
       },
+      {
+        name: 'man.md',
+        content: messages[lang].docTemplate('Linux Manual Pages', 'man')
+      },
+      {
+        name: 'bash.md',
+        content: messages[lang].docTemplate('Bash', 'bash')
+      },
     ];
     
     for (const command of claudeCommands) {
@@ -441,13 +448,10 @@ async function initClaudeCommands(lang = 'en') {
     console.log(chalk.green(messages[lang].successClaude));
     console.log(chalk.yellow(messages[lang].nextSteps));
     console.log(messages[lang].step1);
-    console.log(messages[lang].step1Note1);
-    console.log(messages[lang].step1Note2);
-    console.log(messages[lang].step2);
     console.log(messages[lang].example1);
     console.log(messages[lang].example2);
     console.log(messages[lang].example3);
-    console.log(messages[lang].step3);
+    console.log(messages[lang].step2);
     console.log(messages[lang].readmeLink);
   } catch (error) {
     console.error(chalk.red(messages[lang].errorClaude), error.message);

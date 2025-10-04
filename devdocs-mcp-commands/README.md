@@ -59,6 +59,15 @@ For example:
    /devdocs/openjdk-21 How to implement asynchronous processing?
    
    /devdocs/python-3.12 How do list comprehensions work?
+   
+```
+
+You can also use the search command to check if specific languages or technologies are available in DevDocs.
+
+```
+   /devdocs/search Is Linux available?
+   
+   /devdocs/search Is Kotlin available?
 ```
 
 ## License

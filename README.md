@@ -104,12 +104,10 @@ Add to your Cursor MCP configuration:
 }
 ```
 
-### 4. Enable Documentation
+### 4. See Documentation from Your Browser
 
 1. Open http://localhost:9292 in your browser
-2. Browse available documentation languages
-3. Click "Enable" on the languages you want to download. If no "enabled" link appears, the documentation is already downloaded
-
+2. You can browse available documentation languages
 
 ### 4.5. Setup Slash Commands (Recommended)
 
@@ -177,6 +175,14 @@ For example:
    
    /devdocs/python-3.12 How do list comprehensions work?
 ```
+
+You can also use the search command to check if specific languages or technologies are available in DevDocs.
+
+```
+   /devdocs/search Is Linux available?
+   
+   /devdocs/search Is Kotlin available?
+```
 ## Configuration
 
 ### Environment Variables
@@ -198,7 +204,6 @@ DEVDOCS_BASE_URL=http://devdocs:9292
 Create a `docker-compose.override.yml` file to customize settings:
 
 ```yaml
-version: '3.8'
 services:
   mcp-server:
     environment:
