@@ -1,6 +1,6 @@
 services:
   devdocs:
-    image: ghcr.io/freecodecamp/devdocs:latest
+    image: ghcr.io/freecodecamp/devdocs:latest-alpine
     container_name: devdocs
     ports:
       - "9292:9292"
